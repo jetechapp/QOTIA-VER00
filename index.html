@@ -139,9 +139,14 @@
         
         .big-btn { height: 95px; border-radius: var(--radius); border: none; display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: pointer; position: relative; overflow: hidden; box-shadow: 0 4px 10px rgba(0,0,0,0.08); color: white; }
         .big-btn span { font-weight: 800; font-size: 0.8rem; letter-spacing: 0.5px; text-transform: uppercase; margin-top: 5px; }
+        
         .btn-chantier { background: var(--col-chantier); }
-        .btn-client { background: var(--col-client); }
-        .big-btn i { font-size: 1.8rem; margin-bottom: 5px; color: white !important; }
+        
+        /* BOTTONE CLIENTI GIALLO CON TESTO E ICONA BLU (modifica richiesta) */
+        .btn-client { background: var(--accent); color: var(--primary); }
+        .btn-client i { color: var(--primary) !important; }
+        
+        .big-btn i { font-size: 1.8rem; margin-bottom: 5px; color: white; }
         .btn-agenda-full { background: white; color: var(--text-main); border: 1px solid var(--border); border-bottom: 3px solid var(--border); }
         .btn-agenda-full i { color: var(--text-sub) !important; }
 
@@ -1159,7 +1164,7 @@
                 </div>
                 
                 <div class="card-item" onclick="App.editSetting('materialMarkup', 'Marge sur Matériel (%)')">
-                    <div class="card-info"><div class="card-title">Marge Matériel</div><div class="card-sub">% ajouté au coût d'achat</div></div>
+                    <div class="card-info"><div class="card-title">Marge Matériel</div><div class="card-sub">% aggiunto al costo d'acquisto</div></div>
                     <div style="font-size:1.2rem; font-weight:800; color:var(--success);">${Store.data.settings.materialMarkup} %</div>
                 </div>
                 
@@ -1982,7 +1987,6 @@
                 });
             },
 
-            // ========== FUNZIONE AGGIUNTA: triggerItemAdd ==========
             triggerItemAdd(itemId) {
                 const c = Store.data.chantiers.find(x => x.id == Store.data.activeChantierId);
                 if (!c) return alert("Aucun chantier sélectionné. Ouvrez d'abord un chantier.");
@@ -1994,7 +1998,6 @@
                 const room = (currentRoom && currentRoom !== "Sélectionner une pièce" && currentRoom !== "Sélectionner...") ? currentRoom : "Général";
                 App.openAddItemModal(libItem, room);
             },
-            // ========== FINE FUNZIONE AGGIUNTA ==========
 
             openAddItemModal(item, room) {
                 App.state.isEditing = false;
@@ -2423,7 +2426,7 @@
                 App.showToast("PDF Téléchargé");
             },
 
-            // --- FUNZIONI DI GESTIONE CDC E PDF (RIPRISTINATE) ---
+            // --- FUNZIONI DI GESTIONE CDC E PDF (RIPRISTINATE E FIXATE) ---
             openSelectCDCModal() {
                 const c = Store.data.chantiers.find(x=>x.id==Store.data.activeChantierId);
                 if(!c || !c.devisList || c.devisList.length === 0) return alert("Aucun devis disponible.");
@@ -2444,6 +2447,128 @@
                 App.renderSelectionList();
                 document.getElementById('modal-select-cdc').classList.add('open');
             },
+
+            // FIX: Funzioni aggiunte per gestire correttamente la modale CDC
+            renderSelectionList() {
+                const cid = Store.data.activeChantierId;
+                const c = Store.data.chantiers.find(x=>x.id==cid);
+                const did = document.getElementById('sel-source-devis').value;
+                const container = document.getElementById('selection-list-container');
+                container.innerHTML = '';
+                if(!c || !did) return;
+                const d = c.devisList.find(x=>x.id==did);
+                if(!d || !d.items) return;
+
+                d.items.forEach(i => {
+                    const isChecked = App.state.selectedItems.has(i.id);
+                    const assignedBadge = i.assignedTo ? `<span class="assigned-badge">${i.assignedTo}</span>` : '';
+                    
+                    const div = document.createElement('div');
+                    div.className = 'check-container';
+                    div.onclick = () => App.toggleSelection(i.id);
+                    
+                    div.innerHTML = `
+                        <div class="custom-checkbox ${isChecked ? 'checked' : ''}"></div>
+                        <div style="flex:1;">
+                            <div style="font-weight:700; font-size:0.9rem; color:var(--primary);">${i.desc}</div>
+                            <div style="font-size:0.75rem; color:var(--text-sub);">${i.piece || 'Général'} ${assignedBadge}</div>
+                        </div>
+                    `;
+                    container.appendChild(div);
+                });
+            },
+
+            toggleSelection(id) {
+                if(App.state.selectedItems.has(id)) App.state.selectedItems.delete(id);
+                else App.state.selectedItems.add(id);
+                App.renderSelectionList();
+            },
+
+            selectAllItems() {
+                const cid = Store.data.activeChantierId;
+                const c = Store.data.chantiers.find(x=>x.id==cid);
+                const did = document.getElementById('sel-source-devis').value;
+                if(!c || !did) return;
+                const d = c.devisList.find(x=>x.id==did);
+                if(!d || !d.items) return;
+                
+                if(App.state.selectedItems.size === d.items.length) {
+                    App.state.selectedItems.clear();
+                } else {
+                    d.items.forEach(i => App.state.selectedItems.add(i.id));
+                }
+                App.renderSelectionList();
+            },
+
+            assignCollaborator() {
+                const assignee = document.getElementById('cdc-assignee').value;
+                if(!assignee) return alert("Sélectionner un partenaire");
+                if(App.state.selectedItems.size === 0) return alert("Sélectionner au moins une tâche");
+                
+                const cid = Store.data.activeChantierId;
+                const c = Store.data.chantiers.find(x=>x.id==cid);
+                const did = document.getElementById('sel-source-devis').value;
+                const d = c.devisList.find(x=>x.id==did);
+                
+                d.items.forEach(i => {
+                    if(App.state.selectedItems.has(i.id)) {
+                        i.assignedTo = assignee;
+                    }
+                });
+                Store.save();
+                App.state.selectedItems.clear();
+                App.renderSelectionList();
+                App.showToast("Tâches assignées");
+            },
+
+            saveCDC() {
+                const cid = Store.data.activeChantierId;
+                const c = Store.data.chantiers.find(x=>x.id==cid);
+                const did = document.getElementById('sel-source-devis').value;
+                if(!c || !did) return;
+                const d = c.devisList.find(x=>x.id==did);
+                
+                const assignedItems = (d.items || []).filter(i => i.assignedTo);
+                if(assignedItems.length === 0) return alert("Aucune tâche assignée.");
+                
+                const docId = Date.now();
+                if(!c.extraDocs) c.extraDocs = [];
+                c.extraDocs.push({
+                    id: docId,
+                    ref: 'CDC-' + docId.toString().slice(-4),
+                    name: 'CDC - ' + d.name,
+                    date: new Date().toISOString(),
+                    items: JSON.parse(JSON.stringify(assignedItems))
+                });
+                
+                Store.save();
+                App.closeModal('modal-select-cdc');
+                App.openHub(c.id);
+                App.showToast("Cahier des charges généré");
+            },
+
+            viewCahierTable(doc) {
+                document.getElementById('vc-title').innerText = doc.name;
+                const table = document.getElementById('vc-table');
+                table.innerHTML = `
+                    <tr style="background:var(--primary); color:white;">
+                        <th style="padding:10px; text-align:left;">Tâche</th>
+                        <th style="padding:10px; text-align:left;">Zone</th>
+                        <th style="padding:10px; text-align:left;">Assigné</th>
+                    </tr>
+                `;
+                (doc.items || []).forEach(i => {
+                    table.innerHTML += `
+                        <tr style="border-bottom:1px solid var(--border);">
+                            <td style="padding:10px;">${i.desc}</td>
+                            <td style="padding:10px;">${i.piece || '-'}</td>
+                            <td style="padding:10px; font-weight:bold; color:var(--success);">${i.assignedTo || '-'}</td>
+                        </tr>
+                    `;
+                });
+                document.getElementById('modal-view-cahier').classList.add('open');
+            },
+            // --- FINE FUNZIONI CDC FIXATE ---
 
             generateRoomReportPDF() {
                 const c = Store.data.chantiers.find(x => x.id == Store.data.activeChantierId);
