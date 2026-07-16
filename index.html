@@ -33,8 +33,9 @@
             --bg-body: #F4F7FB;        
             --surface: #FFFFFF;
             --border: #E5E7EB;
+            --border-input: #D1D5DB; /* UX CANTIERE: Bordo più scuro per contrasto sotto il sole */
             --text-main: #1F2937;        
-            --text-sub: #6B7280;
+            --text-sub: #4B5563; /* UX CANTIERE: Testo secondario scurito per leggibilità solare */
             --accent: #FFC033;
             --danger: #EF4444; 
             --success: #10B981;
@@ -141,8 +142,6 @@
         .big-btn span { font-weight: 800; font-size: 0.8rem; letter-spacing: 0.5px; text-transform: uppercase; margin-top: 5px; }
         
         .btn-chantier { background: var(--col-chantier); }
-        
-        /* BOTTONE CLIENTI GIALLO CON TESTO E ICONA BLU (modifica richiesta) */
         .btn-client { background: var(--accent); color: var(--primary); }
         .btn-client i { color: var(--primary) !important; }
         
@@ -155,10 +154,12 @@
         .section-title { font-size: 1.1rem; font-weight: 800; color: var(--primary); }
         .action-create-btn { background: white; color: var(--primary); border: 1px solid var(--border); padding: 8px 16px; border-radius: 20px; font-weight: 700; font-size: 0.8rem; display: flex; align-items: center; gap: 6px; cursor: pointer; }
 
-        .check-container { display: flex; align-items: center; padding: 12px; background: white; border-bottom: 1px solid #F1F5F9; cursor: pointer; }
-        .custom-checkbox { width: 24px; height: 24px; border: 2px solid var(--border); border-radius: 6px; margin-right: 15px; display: flex; align-items: center; justify-content: center; transition: all 0.2s; flex-shrink: 0; }
+        /* UX CANTIERE: Rendi l'area del checkbox molto più grande e comoda per i guanti */
+        .check-container { display: flex; align-items: center; padding: 16px 12px; background: white; border-bottom: 1px solid #F1F5F9; cursor: pointer; }
+        .custom-checkbox { width: 36px; height: 36px; border: 3px solid var(--border-input); border-radius: 8px; margin-right: 15px; display: flex; align-items: center; justify-content: center; transition: all 0.2s; flex-shrink: 0; }
         .custom-checkbox.checked { background: var(--primary); border-color: var(--primary); }
-        .custom-checkbox.checked::after { content: '\f00c'; font-family: 'Font Awesome 6 Free'; font-weight: 900; color: white; font-size: 0.8rem; }
+        .custom-checkbox.checked::after { content: '\f00c'; font-family: 'Font Awesome 6 Free'; font-weight: 900; color: white; font-size: 1.1rem; }
+        
         .assigned-badge { background: #DCFCE7; color: #166534; font-size: 0.7rem; padding: 2px 6px; border-radius: 4px; font-weight: 700; margin-left: 5px; display: inline-flex; align-items: center; gap: 4px; }
 
         .room-tag-scroll { display: flex; gap: 8px; overflow-x: auto; padding: 5px 0 15px 0; -webkit-overflow-scrolling: touch; }
@@ -176,7 +177,11 @@
         .modal-header { height: 70px; background: white; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; padding: 0 20px; font-weight: 800; font-size: 1.2rem; flex-shrink: 0; }
         .modal-body { flex: 1; padding: 20px; overflow-y: auto; padding-bottom: 100px; }
         .modal-footer { padding: 20px; background: white; border-top: 1px solid var(--border); padding-bottom: max(20px, env(safe-area-inset-bottom)); flex-shrink: 0; display:flex; gap:10px; }
-        .app-input { width: 100%; height: 50px; background: #fff; border: 2px solid var(--border); border-radius: 12px; padding: 0 15px; font-size: 1rem; color: var(--primary); margin-bottom: 15px; outline: none; font-weight: 500; appearance: none; }
+        
+        /* UX CANTIERE: Input con bordi marcati */
+        .app-input { width: 100%; height: 50px; background: #fff; border: 2px solid var(--border-input); border-radius: 12px; padding: 0 15px; font-size: 1rem; color: var(--primary); margin-bottom: 15px; outline: none; font-weight: 500; appearance: none; transition: border 0.2s; }
+        .app-input:focus { border-color: var(--primary); }
+        
         .btn-primary { width: 100%; height: 50px; background: var(--primary); color: white; font-weight: 700; border-radius: 12px; border: none; font-size: 1rem; cursor: pointer; box-shadow: 0 4px 12px rgba(28, 54, 102, 0.3); }
 
         .type-switch { display: flex; background: var(--border); padding: 5px; border-radius: 14px; margin-bottom: 20px; }
@@ -442,7 +447,7 @@
     
     <div id="modal-add-photo" class="full-modal">
         <div class="modal-header">
-            <h3>Ajouter une photo</h3>
+            <h3>Ajouter una foto</h3>
             <button class="header-back-container" onclick="App.closeModal('modal-add-photo')">×</button>
         </div>
         <div class="modal-body">
@@ -450,16 +455,16 @@
             <input type="file" id="photo-input" accept="image/*" capture="environment" style="display: none;">
             <div style="display: flex; gap: 10px; justify-content: center; margin-bottom: 20px;">
                 <button class="btn-primary" style="width: auto; padding: 0 20px;" onclick="document.getElementById('photo-input').click()">
-                    <i class="fas fa-camera"></i> Prendre une photo
+                    <i class="fas fa-camera"></i> Prendi foto
                 </button>
                 <button class="btn-primary" style="width: auto; padding: 0 20px; background: var(--text-sub);" onclick="document.getElementById('photo-input').click()">
-                    <i class="fas fa-upload"></i> Choisir un fichier
+                    <i class="fas fa-upload"></i> Scegli file
                 </button>
             </div>
             <div id="photo-preview" style="text-align: center; margin-top: 20px;"></div>
         </div>
         <div class="modal-footer">
-            <button class="btn-primary" onclick="App.uploadPhoto()">Télécharger</button>
+            <button class="btn-primary" onclick="App.uploadPhoto()">Salva</button>
         </div>
     </div>
 
@@ -592,14 +597,18 @@
             <label style="font-weight:700; display:block; margin-bottom:8px;">Description</label>
             <input type="text" id="edit-item-desc" class="app-input">
             
-            <div style="display:flex; gap:15px;">
+            <div style="display:flex; gap:15px; margin-bottom:15px;">
                 <div style="flex:1">
                     <label style="font-weight:700; display:block; margin-bottom:8px;">Qté</label>
-                    <input type="number" id="edit-item-qty" class="app-input" oninput="App.calcEditPrice()">
+                    <div style="display:flex; align-items:center; height:50px; border:2px solid var(--border-input); border-radius:12px; overflow:hidden; background:white;">
+                        <button onclick="App.changeQty(-1)" style="width:40px; height:100%; background:#F3F4F6; border:none; font-size:1.5rem; color:var(--primary); font-weight:bold; cursor:pointer; padding:0;">-</button>
+                        <input type="number" id="edit-item-qty" style="flex:1; height:100%; width:100%; border:none; text-align:center; font-size:1.1rem; font-weight:700; color:var(--primary); outline:none; -moz-appearance:textfield;" oninput="App.calcEditPrice()">
+                        <button onclick="App.changeQty(1)" style="width:40px; height:100%; background:#F3F4F6; border:none; font-size:1.5rem; color:var(--primary); font-weight:bold; cursor:pointer; padding:0;">+</button>
+                    </div>
                 </div>
                 <div style="flex:1">
                     <label style="font-weight:700; display:block; margin-bottom:8px;">Unit.</label>
-                    <input type="text" id="edit-item-unit" class="app-input" disabled style="background:#f1f5f9;">
+                    <input type="text" id="edit-item-unit" class="app-input" disabled style="background:#f1f5f9; margin-bottom:0;">
                 </div>
             </div>
             
@@ -636,9 +645,12 @@
             </div>
             
             <label style="font-weight:700; display:block; margin-bottom:8px; color:var(--rubble);">Gravats U. (kg)</label>
-            <input type="number" id="edit-item-rubble" class="app-input" step="0.01" style="border-color:var(--border); color:var(--rubble); font-weight:700;">
+            <input type="number" id="edit-item-rubble" class="app-input" step="0.01" style="border-color:var(--border-input); color:var(--rubble); font-weight:700;">
             
-            <button id="btn-delete-item" class="btn-primary" style="background:#fee2e2; color:#dc2626; margin-top:20px;" onclick="App.deleteItem()">SUPPRIMER LIGNE</button>
+            <button class="btn-primary" style="background:#F3F4F6; color:var(--primary); border:2px solid var(--border-input); margin-top:10px; margin-bottom:10px;" onclick="document.getElementById('photo-input').click()"><i class="fas fa-camera" style="font-size:1.2rem; margin-right:5px;"></i> FOTO RAPIDA DA CANTIERE</button>
+            <input type="file" id="photo-input" accept="image/*" capture="environment" style="display: none;">
+
+            <button id="btn-delete-item" class="btn-primary" style="background:#fee2e2; color:#dc2626; margin-top:10px;" onclick="App.deleteItem()">SUPPRIMER LIGNE</button>
         </div>
         <div class="modal-footer">
             <button class="btn-primary" onclick="App.saveItemChanges()">CONFIRMER</button>
@@ -706,6 +718,7 @@
             <button class="btn-primary" onclick="App.saveAgendaEvent()">ENREGISTRER</button>
         </div>
     </div>
+
     <script>
         const SUPABASE_URL = 'https://uhuxdsubvvnytuftyztq.supabase.co'; 
         const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVodXhkc3VidnZueXR1ZnR5enRxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njk5MzI3NDMsImV4cCI6MjA4NTUwODc0M30.lXOPs-qDfXuO7ExdpbQJawb_gSWD31FDT0FHSD4xdmE';
@@ -860,7 +873,29 @@
         const App = {
             state: { invType:'acompte', tempClientType: 'particulier', viewMode: 'pieces', selectedItems: new Set(), lastPiece: 'Général', libCategory: null, libSubCategory: null, isEditing: false, tempLibItem: null, currentCDCItemForPhoto: null, currentCDCDocForPhoto: null, currentOTP: null, tempMatCost: 0, globalChart: null },
             
-            init() { Auth.init(); },
+            init() { 
+                Auth.init(); 
+                
+                // UX CANTIERE: Gestione del tasto indietro di Android. Se c'è una modale, chiudila senza uscire dall'app.
+                window.history.pushState({page: 'app'}, "");
+                window.addEventListener('popstate', (e) => {
+                    const openModals = document.querySelectorAll('.full-modal.open');
+                    if (openModals.length > 0) {
+                        openModals.forEach(m => m.classList.remove('open'));
+                        window.history.pushState({page: 'app'}, "");
+                    }
+                });
+            },
+
+            // UX CANTIERE: Funzione dedicata allo Stepper per aumentare o diminuire la Qtà senza tastiera.
+            changeQty(delta) {
+                const inp = document.getElementById('edit-item-qty');
+                let val = parseFloat(inp.value) || 0;
+                val += delta;
+                if(val < 0) val = 0;
+                inp.value = val;
+                this.calcEditPrice();
+            },
 
             applyRoleRestrictions() {
                 const isCollaborateur = Auth.role === 'collaborateur' || Auth.role === 'ouvrier';
@@ -1392,7 +1427,7 @@
                     }
                 });
 
-                if(!rows) return alert("Aucun chantier avec devis accepté.");
+                if(!rows) return alert("Aucun chantier con preventivo accettato.");
 
                 const grandPerc = grandTotalRevenue > 0 ? ((grandTotalMarge / grandTotalRevenue) * 100).toFixed(1) : 0;
 
@@ -2426,7 +2461,6 @@
                 App.showToast("PDF Téléchargé");
             },
 
-            // --- FUNZIONI DI GESTIONE CDC E PDF (RIPRISTINATE E FIXATE) ---
             openSelectCDCModal() {
                 const c = Store.data.chantiers.find(x=>x.id==Store.data.activeChantierId);
                 if(!c || !c.devisList || c.devisList.length === 0) return alert("Aucun devis disponible.");
@@ -2448,7 +2482,6 @@
                 document.getElementById('modal-select-cdc').classList.add('open');
             },
 
-            // FIX: Funzioni aggiunte per gestire correttamente la modale CDC
             renderSelectionList() {
                 const cid = Store.data.activeChantierId;
                 const c = Store.data.chantiers.find(x=>x.id==cid);
@@ -2568,7 +2601,6 @@
                 });
                 document.getElementById('modal-view-cahier').classList.add('open');
             },
-            // --- FINE FUNZIONI CDC FIXATE ---
 
             generateRoomReportPDF() {
                 const c = Store.data.chantiers.find(x => x.id == Store.data.activeChantierId);
