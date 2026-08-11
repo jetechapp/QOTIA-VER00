@@ -364,7 +364,7 @@
             <div id="ai-chat-container" style="flex: 1; display: flex; flex-direction: column; gap: 15px;">
                 <div style="background: white; padding: 15px; border-radius: 12px; border: 1px solid var(--border); box-shadow: var(--shadow-card); max-width: 85%; align-self: flex-start;">
                     <div style="font-weight: 800; color: var(--primary); margin-bottom: 5px; font-size: 0.8rem;"><i class="fas fa-robot"></i> Assistant Qotia</div>
-                    <div style="line-height: 1.4;">Bonjour ! Je suis votre assistant virtuel pour les devis. Décrivez-moi les travaux à réaliser (ex: "Je dois retirer le carrelage et en poser un nouveau") et je vous suggérerai les articles de notre base de données.</div>
+                    <div style="line-height: 1.4;">Bonjour ! Je suis votre assistant virtuel pour les devis. Décrivez-moi les travaux à réaliser (ex: "Je dois retirer le carrelage et en poser un nouveau") e je vous suggérerai les articles de notre base de données.</div>
                 </div>
             </div>
         </div>
@@ -1742,7 +1742,7 @@
                     d.signedByEmail = true; 
                     
                     Store.save();
-                    App.showToast("Devis signé et accepté !");
+                    App.showToast("Devis signé e accettato !");
                     App.closeModal('modal-signature');
                     App.openHub(c.id);
                 } else {
@@ -2935,7 +2935,7 @@
 
             openSelectCDCModal() {
                 const c = Store.data.chantiers.find(x=>x.id==Store.data.activeChantierId); 
-                if(!c || !c.devisList || c.devisList.length === 0) return alert("Aucun devis disponible.");
+                if(!c || !c.devisList || c.devisList.length === 0) return alert("Aucun devis disponibile.");
                 
                 const sel = document.getElementById('sel-source-devis'); 
                 sel.innerHTML = ''; 
@@ -3075,7 +3075,7 @@
             
             generateRoomReportPDF() {
                 const c = Store.data.chantiers.find(x => x.id == Store.data.activeChantierId); 
-                if(!c || !c.devisList || c.devisList.length === 0) return alert("Aucun devis disponible.");
+                if(!c || !c.devisList || c.devisList.length === 0) return alert("Aucun devis disponibile.");
                 
                 const acceptedDevis = c.devisList.filter(d => d.status === 'Accepté'); 
                 const targetDevisList = acceptedDevis.length > 0 ? acceptedDevis : c.devisList;
@@ -3215,15 +3215,19 @@
         <div style="padding: 20px; overflow-y: auto; flex-grow: 1;" id="qotia-ai-body">
             <!-- Step 1: Input -->
             <div id="qotia-step-1">
+                <div id="qotia-ai-warning" style="display:none; background:#FEF2F2; color:#DC2626; padding:10px; border-radius:8px; margin-bottom:15px; font-size:0.9em; border:1px solid #FCA5A5;">
+                    <i class="fas fa-exclamation-triangle"></i> <strong>Nessun Preventivo Attivo.</strong> Assicurati di aprire un Preventivo (Devis) per poter aggiungere gli articoli!
+                </div>
+                
                 <label style="font-weight: bold; display: block; margin-bottom: 10px;">Descrivi vocalmente o per iscritto i lavori (es. Rifacimento bagno):</label>
                 <textarea id="qotia-ai-input" rows="4" style="width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 6px; box-sizing: border-box;"></textarea>
                 <input type="password" id="qotia-api-key" placeholder="Inserisci API Key OpenAI (sk-...)" style="width: 100%; padding: 10px; margin-top: 10px; border: 1px solid #ccc; border-radius: 6px; box-sizing: border-box;">
-                <button id="qotia-ai-submit" style="width: 100%; background: #4f46e5; color: white; border: none; padding: 12px; border-radius: 6px; margin-top: 15px; font-weight: bold; cursor: pointer;">Analizza e Proponi</button>
+                <button id="qotia-ai-submit" style="width: 100%; background: #4f46e5; color: white; border: none; padding: 12px; border-radius: 6px; margin-top: 15px; font-weight: bold; cursor: pointer;">Analizza e Cerca nel Database</button>
             </div>
 
             <!-- Step 2: Loader -->
             <div id="qotia-step-loader" style="display: none; text-align: center; padding: 40px 0;">
-                <p>Consultando il Manuale Logica di Cantiere e analizzando le normative...</p>
+                <p>Elaborazione e matching con il database in corso...</p>
                 <div style="margin: 0 auto; width: 40px; height: 40px; border: 4px solid #f3f3f3; border-top: 4px solid #4f46e5; border-radius: 50%; animation: spin 1s linear infinite;"></div>
             </div>
 
@@ -3231,16 +3235,16 @@
             <div id="qotia-step-results" style="display: none;">
                 <div id="qotia-ai-questions" style="margin-bottom: 15px; padding: 10px; background: #fffbeb; border-left: 4px solid #f59e0b; font-size: 0.9em; display: none;"></div>
                 
-                <h4 style="color: #166534; border-bottom: 1px solid #ccc; padding-bottom: 5px;">Opere Richieste</h4>
+                <h4 style="color: #166534; border-bottom: 1px solid #ccc; padding-bottom: 5px;">Articoli Trovati (Database)</h4>
                 <div id="qotia-list-requested" style="margin-bottom: 15px;"></div>
 
-                <h4 style="color: #9a3412; border-bottom: 1px solid #ccc; padding-bottom: 5px;">Integrazioni Obbligatorie (Normativa / DTU)</h4>
+                <h4 style="color: #9a3412; border-bottom: 1px solid #ccc; padding-bottom: 5px;">Integrazioni Obbligatorie Trovate</h4>
                 <div id="qotia-list-mandatory" style="margin-bottom: 15px;"></div>
 
-                <h4 style="color: #3730a3; border-bottom: 1px solid #ccc; padding-bottom: 5px;">Varianti Consigliate (Up-selling)</h4>
+                <h4 style="color: #3730a3; border-bottom: 1px solid #ccc; padding-bottom: 5px;">Varianti / Up-selling Trovati</h4>
                 <div id="qotia-list-upsell" style="margin-bottom: 15px;"></div>
 
-                <button id="qotia-ai-confirm" style="width: 100%; background: #16a34a; color: white; border: none; padding: 12px; border-radius: 6px; font-weight: bold; cursor: pointer;">Conferma Selezione e Aggiungi a Preventivo</button>
+                <button id="qotia-ai-confirm" style="width: 100%; background: #16a34a; color: white; border: none; padding: 12px; border-radius: 6px; font-weight: bold; cursor: pointer;">Aggiungi al Preventivo Attivo</button>
             </div>
         </div>
     </div>
@@ -3262,21 +3266,26 @@ document.addEventListener('DOMContentLoaded', () => {
     const step1 = document.getElementById('qotia-step-1');
     const stepLoader = document.getElementById('qotia-step-loader');
     const stepResults = document.getElementById('qotia-step-results');
+    const warningMsg = document.getElementById('qotia-ai-warning');
 
-    // Il System Prompt che incorpora le logiche del tuo manuale
-    const SYSTEM_PROMPT = `Sei un Expert Economiste de la Construction e specialista in logica di cantiere BTP in Francia. 
-Il tuo compito è analizzare la richiesta dell'utente basandoti sul MANUEL DE CHIFFRAGE ET LOGIQUE DE CHANTIER (DTU, NF C 15-100).
-REGOLA FONDAMENTALE: Escludi totalmente la gestione, l'elenco o il calcolo delle forniture dei materiali (niente supply management). Concentrati unicamente sulle specifiche di layout spaziale, demolizioni, installazioni e manodopera.
-Se la descrizione è incompleta, poni 1 o 2 domande brevi per chiarire (es. "L'edificio è antecedente al 1997?").
-Restituisci ESCLUSIVAMENTE un oggetto JSON con questa struttura esatta:
+    const SYSTEM_PROMPT = `Sei un Expert Economiste de la Construction. Analizza la richiesta e restituisci "termini di ricerca" molto sintetici e precisi (in FRANCESE), come se dovessi scriverli nella barra di ricerca del database (es. "Pose carrelage", "Peinture murale", "Dépose plinthe").
+REGOLA FONDAMENTALE: Restituisci ESCLUSIVAMENTE un oggetto JSON con questa struttura esatta:
 {
   "domande_chiarimento": "Testo della domanda o stringa vuota",
-  "opere_richieste": ["opera 1", "opera 2"],
-  "opere_obbligatorie": ["obbligo 1 con spiegazione normativa", "obbligo 2"],
-  "opere_consigliate": ["upsell 1", "upsell 2"]
+  "opere_richieste": ["termine ricerca 1", "termine ricerca 2"],
+  "opere_obbligatorie": ["termine obbligo 1"],
+  "opere_consigliate": ["termine upsell 1"]
 }`;
 
-    triggerBtn.addEventListener('click', () => modal.style.display = 'flex');
+    triggerBtn.addEventListener('click', () => {
+        // Controllo contesto preventivo
+        const c = Store.data.activeChantierId ? Store.data.chantiers.find(x => x.id == Store.data.activeChantierId) : null;
+        const hasActiveDevis = c && Store.data.activeDevisId ? (c.devisList||[]).some(x => x.id == Store.data.activeDevisId) : false;
+        
+        warningMsg.style.display = hasActiveDevis ? 'none' : 'block';
+        modal.style.display = 'flex';
+    });
+    
     closeBtn.addEventListener('click', () => modal.style.display = 'none');
 
     submitBtn.addEventListener('click', async () => {
@@ -3325,48 +3334,109 @@ Restituisci ESCLUSIVAMENTE un oggetto JSON con questa struttura esatta:
     function renderResults(result) {
         const qContainer = document.getElementById('qotia-ai-questions');
         if (result.domande_chiarimento && result.domande_chiarimento.length > 0) {
-            qContainer.innerHTML = '<strong>⚠️ Richiesta Chiarimenti:</strong> ' + result.domande_chiarimento;
+            qContainer.innerHTML = '<strong>⚠️ Chiarimenti:</strong> ' + result.domande_chiarimento;
             qContainer.style.display = 'block';
         } else {
             qContainer.style.display = 'none';
         }
 
-        const buildCheckboxes = (arr, containerId, checked = true) => {
+        // Funzione per mappare i suggerimenti testuali dell'IA con il DB REALE di Supabase (Config.allItems) tramite Fuse.js
+        const buildMatchCheckboxes = (aiTerms, containerId, checkedByDefault) => {
             const container = document.getElementById(containerId);
             container.innerHTML = '';
-            if(!arr || arr.length === 0) {
-                container.innerHTML = '<em>Nessuna voce identificata.</em>';
+            if(!aiTerms || aiTerms.length === 0) {
+                container.innerHTML = '<em style="color:var(--text-sub);">Nessuna voce identificata.</em>';
                 return;
             }
-            arr.forEach(item => {
-                const id = 'chk_' + Math.random().toString(36).substr(2, 9);
-                container.innerHTML += `
-                    <div class="qotia-item-row">
-                        <input type="checkbox" id="${id}" class="qotia-final-item" value="${item}" ${checked ? 'checked' : ''}>
-                        <label for="${id}">${item}</label>
-                    </div>
-                `;
+            
+            aiTerms.forEach(term => {
+                // Sfrutta Fuse.js già istanziato nella tua App
+                let searchResults = [];
+                if (Config.searchIndex) {
+                    searchResults = Config.searchIndex.search(term).slice(0, 2); // Prendi i primi 2 risultati più simili
+                }
+                
+                container.innerHTML += `<div style="font-weight:bold; margin-top:10px; font-size:0.85em; color:var(--primary);">» Ricerca: "${term}"</div>`;
+                
+                if(searchResults.length > 0) {
+                    searchResults.forEach(match => {
+                        const item = match.item;
+                        const id = 'chk_' + Math.random().toString(36).substr(2, 9);
+                        const displayPrice = App.calculateItemPrice(item).toFixed(2);
+                        
+                        container.innerHTML += `
+                            <div class="qotia-item-row" style="margin-left: 10px; background:#f8fafc; padding:8px; border-radius:6px; border:1px solid #e2e8f0;">
+                                <input type="checkbox" id="${id}" class="qotia-final-item" value="${item.id}" ${checkedByDefault ? 'checked' : ''}>
+                                <label for="${id}" style="cursor:pointer; flex:1;">
+                                    <strong>${item.desc}</strong><br>
+                                    <span style="font-size:0.85em; color:var(--text-sub);">${item.category} • ${displayPrice}€ / ${item.unit}</span>
+                                </label>
+                            </div>
+                        `;
+                    });
+                } else {
+                     container.innerHTML += `<div style="font-size:0.85em; color:var(--danger); margin-left: 10px;">Nessun articolo trovato nel DB.</div>`;
+                }
             });
         };
 
-        buildCheckboxes(result.opere_richieste, 'qotia-list-requested', true);
-        buildCheckboxes(result.opere_obbligatorie, 'qotia-list-mandatory', true);
-        buildCheckboxes(result.opere_consigliate, 'qotia-list-upsell', false); // Consigliati di default non spuntati
+        buildMatchCheckboxes(result.opere_richieste, 'qotia-list-requested', true);
+        buildMatchCheckboxes(result.opere_obbligatorie, 'qotia-list-mandatory', true);
+        buildMatchCheckboxes(result.opere_consigliate, 'qotia-list-upsell', false);
     }
 
     confirmBtn.addEventListener('click', () => {
-        const selectedItems = Array.from(document.querySelectorAll('.qotia-final-item:checked')).map(cb => cb.value);
+        const selectedItemIds = Array.from(document.querySelectorAll('.qotia-final-item:checked')).map(cb => cb.value);
         
-        console.log("Articoli pronti per l'inserimento su Supabase/Preventivo:", selectedItems);
-        alert("Selezionati " + selectedItems.length + " articoli. Controlla la Console per i dati da mappare nel tuo database.");
+        if (selectedItemIds.length === 0) {
+            alert("Seleziona almeno un articolo da inserire.");
+            return;
+        }
+
+        // Verifica Preventivo Attivo
+        const c = Store.data.chantiers.find(x => x.id == Store.data.activeChantierId);
+        if (!c) return alert("Errore: Nessun cantiere attivo selezionato nell'interfaccia principale.");
         
-        /* 
-         QUI PUOI INNESTARE LA TUA LOGICA SUPABASE ESISTENTE
-         Es: aggiungiRighePreventivo(selectedItems);
-        */
+        const d = c.devisList.find(x => x.id == Store.data.activeDevisId);
+        if (!d) return alert("Errore: Apri un preventivo (Devis) per aggiungervi gli articoli.");
+
+        let addedCount = 0;
+
+        selectedItemIds.forEach(itemId => {
+            const libItem = Config.allItems.find(x => x.id == itemId);
+            if (libItem) {
+                const finalPrice = App.calculateItemPrice(libItem);
+                
+                const newItem = { 
+                    id: Date.now() + Math.floor(Math.random() * 1000), 
+                    desc: libItem.desc, 
+                    unit: libItem.unit || "U", 
+                    time: libItem.labor_time || 0, 
+                    material_cost: libItem.material_cost || 0, 
+                    price: finalPrice, 
+                    qty: 1, 
+                    piece: "Général (via IA)", // Identifica facilmente che è stato inserito dall'IA
+                    gravats: libItem.gravats || 0,
+                    category: libItem.category || "Général" 
+                };
+                
+                if(!d.items) d.items = [];
+                d.items.push(newItem);
+                addedCount++;
+            }
+        });
+        
+        Store.save();
+        App.calcTotals();
+        
+        // Se siamo nella vista Editor, forziamo il refresh
+        if (document.getElementById('view-editor').classList.contains('active')) {
+            App.renderEditorItems();
+        }
+        
+        App.showToast(`Aggiunti ${addedCount} articoli dal DB al preventivo!`);
         
         modal.style.display = 'none';
-        // Reset view
         stepResults.style.display = 'none';
         step1.style.display = 'block';
     });
