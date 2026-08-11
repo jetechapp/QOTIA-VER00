@@ -3268,15 +3268,22 @@ document.addEventListener('DOMContentLoaded', () => {
     const stepResults = document.getElementById('qotia-step-results');
     const warningMsg = document.getElementById('qotia-ai-warning');
 
-    const SYSTEM_PROMPT = `Sei un Expert Economiste de la Construction. Analizza la richiesta e restituisci "termini di ricerca" molto sintetici e precisi (in FRANCESE), come se dovessi scriverli nella barra di ricerca del database (es. "Pose carrelage", "Peinture murale", "Dépose plinthe").
+
+    const SYSTEM_PROMPT = `Sei un Expert Economiste de la Construction e specialista BTP in Francia. Il tuo compito è analizzare la richiesta dell'utente (che spesso usa gergo parlato, slang, lingue diverse o descrizioni generiche) e tradurla nei termini tecnici standard più precisi in FRANCESE.
+
+REGOLE DI OTTIMIZZAZIONE RICERCA:
+1. TRADUZIONE SEMANTICA: Converti il gergo in linguaggio tecnico da preventivo (es. da "casser le mur" o "buttare giù il muro" a "Démolition cloison"; da "mettre des prises" a "Pose prise de courant").
+2. SINONIMI MULTIPLI: Se un termine è ambiguo, fornisci più varianti tecniche per massimizzare le probabilità di trovarlo nel database (es. se l'utente chiede "placo", restituisci sia "Placoplâtre" che "Cloison BA13").
+3. SINTESI: Genera "termini di ricerca" brevi (1-3 parole al massimo), evitando articoli e preposizioni inutili (es. usa "Peinture plafond" e non "Faire la peinture sur le plafond").
+
 REGOLA FONDAMENTALE: Restituisci ESCLUSIVAMENTE un oggetto JSON con questa struttura esatta:
 {
   "domande_chiarimento": "Testo della domanda o stringa vuota",
-  "opere_richieste": ["termine ricerca 1", "termine ricerca 2"],
-  "opere_obbligatorie": ["termine obbligo 1"],
-  "opere_consigliate": ["termine upsell 1"]
+  "opere_richieste": ["termine tecnico 1", "sinonimo tecnico 2"],
+  "opere_obbligatorie": ["obbligo normativo 1"],
+  "opere_consigliate": ["variante upsell 1"]
 }`;
-
+    
     triggerBtn.addEventListener('click', () => {
         // Controllo contesto preventivo
         const c = Store.data.activeChantierId ? Store.data.chantiers.find(x => x.id == Store.data.activeChantierId) : null;
