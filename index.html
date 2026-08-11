@@ -3194,5 +3194,187 @@
 
         window.onload = () => App.init();
     </script>
+<!-- ========================================== -->
+<!-- MODULO IA QOTIA - DA INCOLLARE PRIMA DI </body> -->
+<!-- ========================================== -->
+
+<!-- Pulsante Flottante per richiamare l'IA -->
+<button id="qotia-ai-trigger" style="position: fixed; bottom: 20px; right: 20px; background: #4f46e5; color: white; border: none; border-radius: 50px; padding: 15px 25px; font-weight: bold; cursor: pointer; box-shadow: 0 4px 6px rgba(0,0,0,0.1); z-index: 9999;">
+    ✨ Assistente IA Lavori
+</button>
+
+<!-- Modal Interfaccia IA -->
+<div id="qotia-ai-modal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 10000; justify-content: center; align-items: center; font-family: sans-serif;">
+    <div style="background: white; width: 90%; max-width: 600px; max-height: 90vh; border-radius: 12px; display: flex; flex-direction: column; overflow: hidden; box-shadow: 0 10px 25px rgba(0,0,0,0.2);">
+        
+        <div style="padding: 15px 20px; background: #1e1b4b; color: white; display: flex; justify-content: space-between; align-items: center;">
+            <h3 style="margin: 0;">Analisi Lavori & Preventivazione</h3>
+            <button id="qotia-ai-close" style="background: none; border: none; color: white; font-size: 20px; cursor: pointer;">&times;</button>
+        </div>
+
+        <div style="padding: 20px; overflow-y: auto; flex-grow: 1;" id="qotia-ai-body">
+            <!-- Step 1: Input -->
+            <div id="qotia-step-1">
+                <label style="font-weight: bold; display: block; margin-bottom: 10px;">Descrivi vocalmente o per iscritto i lavori (es. Rifacimento bagno):</label>
+                <textarea id="qotia-ai-input" rows="4" style="width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 6px; box-sizing: border-box;"></textarea>
+                <input type="password" id="qotia-api-key" placeholder="Inserisci API Key OpenAI (sk-...)" style="width: 100%; padding: 10px; margin-top: 10px; border: 1px solid #ccc; border-radius: 6px; box-sizing: border-box;">
+                <button id="qotia-ai-submit" style="width: 100%; background: #4f46e5; color: white; border: none; padding: 12px; border-radius: 6px; margin-top: 15px; font-weight: bold; cursor: pointer;">Analizza e Proponi</button>
+            </div>
+
+            <!-- Step 2: Loader -->
+            <div id="qotia-step-loader" style="display: none; text-align: center; padding: 40px 0;">
+                <p>Consultando il Manuale Logica di Cantiere e analizzando le normative...</p>
+                <div style="margin: 0 auto; width: 40px; height: 40px; border: 4px solid #f3f3f3; border-top: 4px solid #4f46e5; border-radius: 50%; animation: spin 1s linear infinite;"></div>
+            </div>
+
+            <!-- Step 3: Risultati -->
+            <div id="qotia-step-results" style="display: none;">
+                <div id="qotia-ai-questions" style="margin-bottom: 15px; padding: 10px; background: #fffbeb; border-left: 4px solid #f59e0b; font-size: 0.9em; display: none;"></div>
+                
+                <h4 style="color: #166534; border-bottom: 1px solid #ccc; padding-bottom: 5px;">Opere Richieste</h4>
+                <div id="qotia-list-requested" style="margin-bottom: 15px;"></div>
+
+                <h4 style="color: #9a3412; border-bottom: 1px solid #ccc; padding-bottom: 5px;">Integrazioni Obbligatorie (Normativa / DTU)</h4>
+                <div id="qotia-list-mandatory" style="margin-bottom: 15px;"></div>
+
+                <h4 style="color: #3730a3; border-bottom: 1px solid #ccc; padding-bottom: 5px;">Varianti Consigliate (Up-selling)</h4>
+                <div id="qotia-list-upsell" style="margin-bottom: 15px;"></div>
+
+                <button id="qotia-ai-confirm" style="width: 100%; background: #16a34a; color: white; border: none; padding: 12px; border-radius: 6px; font-weight: bold; cursor: pointer;">Conferma Selezione e Aggiungi a Preventivo</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+    .qotia-item-row { display: flex; align-items: flex-start; gap: 10px; margin-bottom: 8px; font-size: 0.9em; }
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    const modal = document.getElementById('qotia-ai-modal');
+    const triggerBtn = document.getElementById('qotia-ai-trigger');
+    const closeBtn = document.getElementById('qotia-ai-close');
+    const submitBtn = document.getElementById('qotia-ai-submit');
+    const confirmBtn = document.getElementById('qotia-ai-confirm');
+
+    const step1 = document.getElementById('qotia-step-1');
+    const stepLoader = document.getElementById('qotia-step-loader');
+    const stepResults = document.getElementById('qotia-step-results');
+
+    // Il System Prompt che incorpora le logiche del tuo manuale
+    const SYSTEM_PROMPT = `Sei un Expert Economiste de la Construction e specialista in logica di cantiere BTP in Francia. 
+Il tuo compito è analizzare la richiesta dell'utente basandoti sul MANUEL DE CHIFFRAGE ET LOGIQUE DE CHANTIER (DTU, NF C 15-100).
+REGOLA FONDAMENTALE: Escludi totalmente la gestione, l'elenco o il calcolo delle forniture dei materiali (niente supply management). Concentrati unicamente sulle specifiche di layout spaziale, demolizioni, installazioni e manodopera.
+Se la descrizione è incompleta, poni 1 o 2 domande brevi per chiarire (es. "L'edificio è antecedente al 1997?").
+Restituisci ESCLUSIVAMENTE un oggetto JSON con questa struttura esatta:
+{
+  "domande_chiarimento": "Testo della domanda o stringa vuota",
+  "opere_richieste": ["opera 1", "opera 2"],
+  "opere_obbligatorie": ["obbligo 1 con spiegazione normativa", "obbligo 2"],
+  "opere_consigliate": ["upsell 1", "upsell 2"]
+}`;
+
+    triggerBtn.addEventListener('click', () => modal.style.display = 'flex');
+    closeBtn.addEventListener('click', () => modal.style.display = 'none');
+
+    submitBtn.addEventListener('click', async () => {
+        const input = document.getElementById('qotia-ai-input').value;
+        const apiKey = document.getElementById('qotia-api-key').value;
+
+        if (!input || !apiKey) {
+            alert('Inserisci la descrizione dei lavori e la API Key.');
+            return;
+        }
+
+        step1.style.display = 'none';
+        stepLoader.style.display = 'block';
+
+        try {
+            const response = await fetch('https://api.openai.com/v1/chat/completions', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': 'Bearer ' + apiKey
+                },
+                body: JSON.stringify({
+                    model: 'gpt-4o',
+                    messages: [
+                        { role: 'system', content: SYSTEM_PROMPT },
+                        { role: 'user', content: input }
+                    ],
+                    response_format: { type: "json_object" },
+                    temperature: 0.2
+                })
+            });
+
+            const data = await response.json();
+            const result = JSON.parse(data.choices[0].message.content);
+
+            renderResults(result);
+            stepLoader.style.display = 'none';
+            stepResults.style.display = 'block';
+        } catch (error) {
+            alert('Errore API: ' + error.message);
+            stepLoader.style.display = 'none';
+            step1.style.display = 'block';
+        }
+    });
+
+    function renderResults(result) {
+        const qContainer = document.getElementById('qotia-ai-questions');
+        if (result.domande_chiarimento && result.domande_chiarimento.length > 0) {
+            qContainer.innerHTML = '<strong>⚠️ Richiesta Chiarimenti:</strong> ' + result.domande_chiarimento;
+            qContainer.style.display = 'block';
+        } else {
+            qContainer.style.display = 'none';
+        }
+
+        const buildCheckboxes = (arr, containerId, checked = true) => {
+            const container = document.getElementById(containerId);
+            container.innerHTML = '';
+            if(!arr || arr.length === 0) {
+                container.innerHTML = '<em>Nessuna voce identificata.</em>';
+                return;
+            }
+            arr.forEach(item => {
+                const id = 'chk_' + Math.random().toString(36).substr(2, 9);
+                container.innerHTML += \`
+                    <div class="qotia-item-row">
+                        <input type="checkbox" id="\${id}" class="qotia-final-item" value="\${item}" \${checked ? 'checked' : ''}>
+                        <label for="\${id}">\${item}</label>
+                    </div>
+                \`;
+            });
+        };
+
+        buildCheckboxes(result.opere_richieste, 'qotia-list-requested', true);
+        buildCheckboxes(result.opere_obbligatorie, 'qotia-list-mandatory', true);
+        buildCheckboxes(result.opere_consigliate, 'qotia-list-upsell', false); // Consigliati di default non spuntati
+    }
+
+    confirmBtn.addEventListener('click', () => {
+        const selectedItems = Array.from(document.querySelectorAll('.qotia-final-item:checked')).map(cb => cb.value);
+        
+        console.log("Articoli pronti per l'inserimento su Supabase/Preventivo:", selectedItems);
+        alert("Selezionati " + selectedItems.length + " articoli. Controlla la Console per i dati da mappare nel tuo database.");
+        
+        /* 
+         QUI PUOI INNESTARE LA TUA LOGICA SUPABASE ESISTENTE
+         Es: aggiungiRighePreventivo(selectedItems);
+        */
+        
+        modal.style.display = 'none';
+        // Reset view
+        stepResults.style.display = 'none';
+        step1.style.display = 'block';
+    });
+});
+</script>
+<!-- ========================================== -->
+<!-- FINE MODULO IA -->
+<!-- ========================================== -->
+    
 </body>
 </html>
