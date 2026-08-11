@@ -411,7 +411,7 @@
             
             <div id="selection-list-container" style="background:white; border-radius:12px; border:1px solid var(--border); overflow:hidden; max-height:400px; overflow-y:auto;"></div>
             
-            <label style="font-weight:700; margin-top:20px; display:block;">Attribuer à:</label>
+            <label style="font-weight:700; margin-top:20px; display:block;">Attribuer a:</label>
             <div style="display:flex; gap:10px; margin-bottom:10px;">
                 <select id="cdc-assignee" class="app-input" style="flex:1; margin:0;"></select>
                 <button class="btn-primary" style="width:100px;" onclick="App.assignCollaborator()">OK</button>
@@ -448,7 +448,7 @@
 
             <div id="sig-step-2" style="width: 100%; display:none; flex-direction:column; align-items:center;">
                 <div style="background:#ECFDF5; border:1px solid #10B981; color:#065F46; padding:15px; border-radius:10px; margin-bottom:20px; text-align:center; font-size:0.9rem;">
-                    <i class="fas fa-check-circle"></i> Un code à 4 chiffres a été envoyé par e-mail.
+                    <i class="fas fa-check-circle"></i> Un code a à 4 chiffres a été envoyé par e-mail.
                 </div>
                 <label style="font-weight:700; color:var(--text-sub); margin-bottom:10px;">Code de Confirmation :</label>
                 <input type="text" id="sig-otp-input" class="app-input" placeholder="0 0 0 0" style="text-align:center; font-size:2rem; letter-spacing:15px; font-weight:900;" maxlength="4">
@@ -648,7 +648,7 @@
             <label style="font-weight:700;">Nom du chantier</label>
             <input type="text" id="prj-nom" class="app-input" placeholder="ex: Rénovation salle de bain">
             <label style="font-weight:700;">Adresse</label>
-            <input type="text" id="prj-addr" class="app-input" placeholder="Adresse du chantier">
+            <input type="text" id="prj-addr" class="app-input" placeholder="Adresse del chantier">
         </div>
         <div class="modal-footer">
             <button class="btn-primary" onclick="App.createProject()">CRÉER</button>
@@ -3340,12 +3340,12 @@ Restituisci ESCLUSIVAMENTE un oggetto JSON con questa struttura esatta:
             }
             arr.forEach(item => {
                 const id = 'chk_' + Math.random().toString(36).substr(2, 9);
-                container.innerHTML += \`
+                container.innerHTML += `
                     <div class="qotia-item-row">
-                        <input type="checkbox" id="\${id}" class="qotia-final-item" value="\${item}" \${checked ? 'checked' : ''}>
-                        <label for="\${id}">\${item}</label>
+                        <input type="checkbox" id="${id}" class="qotia-final-item" value="${item}" ${checked ? 'checked' : ''}>
+                        <label for="${id}">${item}</label>
                     </div>
-                \`;
+                `;
             });
         };
 
