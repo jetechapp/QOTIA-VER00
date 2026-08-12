@@ -3268,19 +3268,21 @@ document.addEventListener('DOMContentLoaded', () => {
     const stepResults = document.getElementById('qotia-step-results');
     const warningMsg = document.getElementById('qotia-ai-warning');
 
-    // PROMPT AGGIORNATO: Ogni voce ha la sua stima "Fallback" integrata in caso di mancato match
+    // PROMPT MIGLIORATO: Divieto assoluto di usare verbi generici nei termini di ricerca
     const SYSTEM_PROMPT = `Tu es un Expert Économiste de la Construction et spécialiste BTP en France.
 Ton rôle est d'analyser la demande du client, de déduire les obligations légales (DTU, NF C 15-100) et de générer une liste d'interventions.
 
 IMPORTANT : Ton système doit anticiper le fait que certains articles pourraient ne pas exister dans la base de données locale du client. 
-Pour CHAQUE intervention (demandée, obligatoire ou conseillée), tu dois fournir :
-1. "termini_ricerca" : Un tableau de mots-clés courts (ex: ["Démolition cloison", "Casser mur"]) pour interroger la base.
+Pour CHAQUE intervention, tu dois fournir :
+1. "termini_ricerca" : Un tableau de mots-clés TRES COURTS. REGLE ABSOLUE : SUPPRIME TOUS LES VERBES génériques (Pose, Installation, Création, Réfection, Peinture).
+   Exemple MAUVAIS: ["Installation VMC", "Pose parquet", "Faire peinture mur"].
+   Exemple BON: ["VMC double flux", "Parquet stratifié", "Mur blanc mat"].
 2. "fallback_creation" : Un objet contenant les données estimées au cas où la recherche échoue, pour créer l'article sur mesure.
 
 === MANUEL DE CHIFFRAGE ET LOGIQUE DE CHANTIER (BASE DE CONNAISSANCES) ===
 1. CUISINE
 - Démolition : Bouchonner réseaux, diagnostic amiante (DAAT) si < 1997.
-- Plomberie/VMC : Mini-vannes d'arrêt sous évier. Bouche VMC 125mm. Pente 1-2%.
+- Plomberie/VMC : Mini-vannes d'arrêt sous évier. Bouche VMC 125mm.
 - Élec (NF C 15-100) : 6 PC 16A min. Lignes 32A (Plaques), 16A (Four/LV).
 - Finitions : SPEC sur mur évier. Joint silicone fongicide.
 
@@ -3311,8 +3313,8 @@ C. PEINTURE (DTU 59.1)
 - Lessivage alcalin si gras. Impression sur plâtre neuf. Traitement amiante/plomb si <1997/1949.
 - Qualité État A (ratissage total) ou B (rebouchage).
 
-D. LOGISTIQUE
-- Si Étage sans ascenseur -> Majoration manutention. TVA: 5.5% / 10% / 20%. Nettoyage fin de chantier.
+D. LOGISTIQUE & RÉNOVATION TOTALE
+- Si rénovation totale : Prévoir toujours Démolition, Évacuation gravats, et Nettoyage fin de chantier.
 === FIN DU MANUEL ===
 
 FORMAT DE RÉPONSE OBLIGATOIRE (JSON EXACT).
@@ -3321,7 +3323,7 @@ FORMAT DE RÉPONSE OBLIGATOIRE (JSON EXACT).
   "opere_richieste": [
     {
       "termini_ricerca": ["terme recherche 1", "synonyme 1"],
-      "fallback_creation": { "desc": "[IA] Description exacte", "category": "Catégorie", "unit": "m²", "time": 1.5, "material_cost": 20.0 }
+      "fallback_creation": { "desc": "[IA] Description exacte de l'ouvrage", "category": "Catégorie", "unit": "m²", "time": 1.5, "material_cost": 20.0 }
     }
   ],
   "opere_obbligatorie": [
@@ -3338,6 +3340,224 @@ FORMAT DE RÉPONSE OBLIGATOIRE (JSON EXACT).
   ]
 }`;
 
+    triggerBtn.addEventListener('click', () => {
+        const c = Store.data.activeChantierId ? Store.data.chantiers.find(x => x.id == Store.data.activeChantierId) : null;
+        const hasActiveDevis = c && Store.data.activeDevisId ? (c.devisList||[]).some(x => x.id == Store.data.activeDevisId) : false;
+        
+        warningMsg.style.display = hasActiveDevis ? 'none' : 'block';
+        modal.style.display = 'flex';
+    });
+    
+    closeBtn.addEventListener('click', () => modal.style.display = 'none');
+
+    submitBtn.addEventListener('click', async () => {
+        const input = document.getElementById('qotia-ai-input').value;
+        const apiKey = document.getElementById('qotia-api-key').value;
+
+        if (!input || !apiKey) {
+            alert('Inserisci la descrizione dei lavori e la API Key.');
+            return;
+        }
+
+        step1.style.display = 'none';
+        stepLoader.style.display = 'block';
+
+        try {
+            const response = await fetch('https://api.openai.com/v1/chat/completions', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': 'Bearer ' + apiKey
+                },
+                body: JSON.stringify({
+                    model: 'gpt-4o',
+                    messages: [
+                        { role: 'system', content: SYSTEM_PROMPT },
+                        { role: 'user', content: input }
+                    ],
+                    response_format: { type: "json_object" },
+                    temperature: 0.2
+                })
+            });
+
+            const data = await response.json();
+            const result = JSON.parse(data.choices[0].message.content);
+
+            renderResults(result);
+            stepLoader.style.display = 'none';
+            stepResults.style.display = 'block';
+        } catch (error) {
+            alert('Errore API: ' + error.message);
+            stepLoader.style.display = 'none';
+            step1.style.display = 'block';
+        }
+    });
+
+    function renderResults(result) {
+        const qContainer = document.getElementById('qotia-ai-questions');
+        if (result.domande_chiarimento && result.domande_chiarimento.length > 0) {
+            qContainer.innerHTML = '<strong>⚠️ Chiarimenti:</strong> ' + result.domande_chiarimento;
+            qContainer.style.display = 'block';
+        } else {
+            qContainer.style.display = 'none';
+        }
+
+        const buildMatchCheckboxes = (itemsArray, containerId, checkedByDefault) => {
+            const container = document.getElementById(containerId);
+            container.innerHTML = '';
+            if(!itemsArray || itemsArray.length === 0) {
+                container.innerHTML = '<em style="color:var(--text-sub);">Nessuna voce identificata.</em>';
+                return;
+            }
+            
+            itemsArray.forEach(itemObj => {
+                const terms = itemObj.termini_ricerca || [];
+                const fallback = itemObj.fallback_creation;
+                
+                let searchResults = [];
+                if (Config.searchIndex) {
+                    for (let term of terms) {
+                        let res = Config.searchIndex.search(term);
+                        
+                        // CODICE MIGLIORATO: Filtra solo i risultati con un punteggio basso (match reale)
+                        // Fuse.js assegna punteggi da 0.0 (perfetto) a 1.0 (pessimo). Se > 0.35, è spazzatura.
+                        let validMatches = res.filter(m => m.score !== undefined && m.score < 0.35);
+
+                        if (validMatches.length > 0) {
+                            searchResults = validMatches.slice(0, 2); 
+                            break;
+                        }
+                    }
+                }
+                
+                const displayTerms = terms.join(' / ');
+                container.innerHTML += `<div style="font-weight:bold; margin-top:10px; font-size:0.85em; color:var(--primary);">» Ricerca: "${displayTerms}"</div>`;
+                
+                if(searchResults.length > 0) {
+                    // Match accurato trovato nel Database
+                    searchResults.forEach(match => {
+                        const item = match.item;
+                        const id = 'chk_' + Math.random().toString(36).substr(2, 9);
+                        const displayPrice = App.calculateItemPrice(item).toFixed(2);
+                        
+                        container.innerHTML += `
+                            <div class="qotia-item-row" style="margin-left: 10px; background:#f8fafc; padding:8px; border-radius:6px; border:1px solid #e2e8f0;">
+                                <input type="checkbox" id="${id}" class="qotia-final-item" value="${item.id}" ${checkedByDefault ? 'checked' : ''}>
+                                <label for="${id}" style="cursor:pointer; flex:1;">
+                                    <strong>${item.desc}</strong><br>
+                                    <span style="font-size:0.85em; color:var(--text-sub);">${item.category} • ${displayPrice}€ / ${item.unit}</span>
+                                </label>
+                            </div>
+                        `;
+                    });
+                } else if (fallback) {
+                    // Nessun Match accurato -> Usa il Fallback generato dall'IA
+                    const id = 'chk_new_' + Math.random().toString(36).substr(2, 9);
+                    const valObj = encodeURIComponent(JSON.stringify(fallback));
+                    
+                    const rate = Store.data.settings.hourlyRate || 45;
+                    const markup = Store.data.settings.materialMarkup || 30;
+                    const estimatedPrice = ((fallback.time || 0) * rate) + ((fallback.material_cost || 0) * (1 + markup/100));
+
+                    container.innerHTML += `
+                        <div class="qotia-item-row" style="margin-left: 10px; background:#e0e7ff; padding:10px; border-radius:6px; border:1px solid #c7d2fe;">
+                            <input type="checkbox" id="${id}" class="qotia-new-dtu-item" value="${valObj}" ${checkedByDefault ? 'checked' : ''}>
+                            <label for="${id}" style="cursor:pointer; flex:1;">
+                                <strong>✨ ${fallback.desc}</strong><br>
+                                <span style="font-size:0.85em; color:#4338ca;">
+                                    ${fallback.category} • Stimato: ${estimatedPrice.toFixed(2)}€ / ${fallback.unit} 
+                                    <br><small>(T: ${fallback.time}h | Mat: ${fallback.material_cost}€) - Articolo Generato</small>
+                                </span>
+                            </label>
+                        </div>
+                    `;
+                }
+            });
+        };
+
+        buildMatchCheckboxes(result.opere_richieste, 'qotia-list-requested', true);
+        buildMatchCheckboxes(result.opere_obbligatorie, 'qotia-list-mandatory', true);
+        buildMatchCheckboxes(result.opere_consigliate, 'qotia-list-upsell', false);
+    }
+
+    confirmBtn.addEventListener('click', () => {
+        const selectedItemIds = Array.from(document.querySelectorAll('.qotia-final-item:checked')).map(cb => cb.value);
+        const selectedNewItems = Array.from(document.querySelectorAll('.qotia-new-dtu-item:checked')).map(cb => JSON.parse(decodeURIComponent(cb.value)));
+        
+        if (selectedItemIds.length === 0 && selectedNewItems.length === 0) {
+            alert("Seleziona almeno un articolo da inserire.");
+            return;
+        }
+
+        const c = Store.data.chantiers.find(x => x.id == Store.data.activeChantierId);
+        if (!c) return alert("Errore: Nessun cantiere attivo selezionato.");
+        const d = c.devisList.find(x => x.id == Store.data.activeDevisId);
+        if (!d) return alert("Errore: Apri un preventivo per ajouter les articles.");
+
+        let addedCount = 0;
+
+        selectedItemIds.forEach(itemId => {
+            const libItem = Config.allItems.find(x => x.id == itemId);
+            if (libItem) {
+                const finalPrice = App.calculateItemPrice(libItem);
+                
+                const newItem = { 
+                    id: Date.now() + Math.floor(Math.random() * 1000), 
+                    desc: libItem.desc, 
+                    unit: libItem.unit || "U", 
+                    time: libItem.labor_time || 0, 
+                    material_cost: libItem.material_cost || 0, 
+                    price: finalPrice, 
+                    qty: 1, 
+                    piece: "Général (IA)", 
+                    gravats: libItem.gravats || 0,
+                    category: libItem.category || "Général" 
+                };
+                
+                if(!d.items) d.items = [];
+                d.items.push(newItem);
+                addedCount++;
+            }
+        });
+
+        selectedNewItems.forEach(itemData => {
+            const laborCost = (itemData.time || 0) * (Store.data.settings.hourlyRate || 45);
+            const matCost = (itemData.material_cost || 0) * (1 + (Store.data.settings.materialMarkup || 30)/100);
+            const finalPrice = laborCost + matCost;
+            
+            const newDtuItem = {
+                id: Date.now() + Math.floor(Math.random() * 10000),
+                desc: itemData.desc,
+                unit: itemData.unit || "U",
+                time: itemData.time || 0,
+                material_cost: itemData.material_cost || 0,
+                price: finalPrice,
+                qty: 1,
+                piece: "Général (Création IA)",
+                gravats: 0, 
+                category: itemData.category || "Général"
+            };
+
+            if(!d.items) d.items = [];
+            d.items.push(newDtuItem);
+            addedCount++;
+        });
+        
+        Store.save();
+        App.calcTotals();
+        
+        if (document.getElementById('view-editor').classList.contains('active')) {
+            App.renderEditorItems();
+        }
+        
+        App.showToast(`Aggiunti ${addedCount} articoli al preventivo!`);
+        
+        modal.style.display = 'none';
+        stepResults.style.display = 'none';
+        step1.style.display = 'block';
+    });
+});
+</script>
     triggerBtn.addEventListener('click', () => {
         const c = Store.data.activeChantierId ? Store.data.chantiers.find(x => x.id == Store.data.activeChantierId) : null;
         const hasActiveDevis = c && Store.data.activeDevisId ? (c.devisList||[]).some(x => x.id == Store.data.activeDevisId) : false;
