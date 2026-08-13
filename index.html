@@ -3263,7 +3263,6 @@
     @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
     .qotia-item-row { display: flex; align-items: flex-start; gap: 10px; margin-bottom: 8px; font-size: 0.9em; }
 </style>
-
 <script>
 document.addEventListener('DOMContentLoaded', () => {
     const modal = document.getElementById('qotia-ai-modal');
@@ -3337,6 +3336,55 @@ document.addEventListener('DOMContentLoaded', () => {
     setupVoiceRecognition('qotia-mic-refine', 'qotia-ai-refine-input');
 
     let aiConversationHistory = [];
+
+    // QUI IMPOSTIAMO L'ORDINE MAESTRO DELLE FAMIGLIE PER L'UI (Sostituisci i nomi se la tua lista è diversa)
+    const MASTER_FAMILIES_ORDER = [
+        "INSTALLATION ET REPLI DE CHANTIER",
+        "DÉMOLITION - DÉPOSE",
+        "MAÇONNERIE - GROS ŒUVRE",
+        "PLATRERIE - ISOLATION",
+        "MENUISERIE",
+        "ÉLECTRICITÉ - COURANTS FAIBLES",
+        "PLOMBERIE - SANITAIRE",
+        "CHAUFFAGE - CLIMATISATION - VMC",
+        "REVÊTEMENTS MURS & SOLS (DURS)",
+        "REVÊTEMENTS MURS & SOLS (SOUPLES)",
+        "PEINTURE - FINITIONS",
+        "NETTOYAGE"
+    ];
+
+    const SYSTEM_PROMPT = `Tu es un Expert Économiste de la Construction, un Chef de Chantier Senior et un mentor proactif en France.
+Ton rôle n'est pas seulement de lister des articles, mais d'AGIR COMME UNE VRAIE PERSONNE qui guide l'artisan ou le commercial pas-à-pas dans la création de son devis.
+
+IMPORTANT - COMPORTEMENT DE GUIDE ET MENTOR :
+1. Utilise le champ "message_conversationnel" pour parler directement à l'utilisateur (sois professionnel, encourageant et proactif).
+2. Ne donne pas tout d'un coup si le projet est immense. Guide l'utilisateur par étapes. S'il dit "Je veux refaire la salle de bain", donne les démolitions et la préparation, puis demande-lui dans ce message : "Quels types de revêtements prévois-tu ? As-tu besoin d'une douche à l'italienne ou d'une baignoire ?".
+3. Si un [CONTEXTE SYSTÈME INVISIBLE] avec les dimensions d'une pièce t'est fourni, mentionne-le dans ta réponse (ex: "J'ai bien noté que la pièce fait 20m², j'ai calculé les quantités en fonction...").
+
+=== STRUCTURE DES FAMILLES OBLIGATOIRES ===
+Lorsque tu crées un article sur mesure dans "fallback_creation.category", tu DOIS utiliser l'une des familles suivantes pour respecter l'ordre du chantier :
+1. INSTALLATION ET REPLI DE CHANTIER
+2. DÉMOLITION - DÉPOSE
+3. MAÇONNERIE - GROS ŒUVRE
+4. PLATRERIE - ISOLATION
+5. MENUISERIE
+6. ÉLECTRICITÉ - COURANTS FAIBLES
+7. PLOMBERIE - SANITAIRE
+8. CHAUFFAGE - CLIMATISATION - VMC
+9. REVÊTEMENTS MURS & SOLS (DURS)
+10. REVÊTEMENTS MURS & SOLS (SOUPLES)
+11. PEINTURE - FINITIONS
+12. NETTOYAGE
+
+IMPORTANT - CALCULS OBLIGATOIRES (NF C 15-100 & QUANTITÉS) :
+1. PRISES DE COURANT (PC 16A) : Séjour = 1 prise/4m² (min 5). Chambre = Min 3. Cuisine = Min 6. WC/Couloir/SDB = Min 1. 
+2. ÉCLAIRAGE/RJ45 : Min 1 Point DCL et 1 RJ45 par pièce.
+3. REVÊTEMENTS/GRAVATS : Applique la surface (m²) aux revêtements et estime les gravats.
+
+Pour CHAQUE intervention, tu dois fournir :
+1. "termini_ricerca" : Mots-clés TRES COURTS, SANS VERBES. (Ex: ["Prise courant 16A", "Point DCL", "Parquet stratifié"]).
+2. "suggested_qty" : La quantité numérique exacte (ex: 20.0).
+3. "fallback_creation" : Un objet pour créer l'article si la recherche échoue, avec la catégorie tirée de la liste OBLIGATOIRE ci-dessus.
 
     const SYSTEM_PROMPT = `Tu es un Expert Économiste de la Construction et spécialiste BTP en France.
 Ton rôle est d'analyser la demande du client, de déduire les obligations légales (DTU, NF C 15-100) et de générer une liste d'interventions chiffrées.
@@ -3508,29 +3556,29 @@ PARTIE 4 : LOGISTIQUE, RÉGLEMENTATIONS ET MODÉLISATION FINANCIÈRE
 - Délais/Séchage : Chape tradi = 1 semaine/cm. Chape rapide = +40% coût. Test bombe à carbure pour chape fluide.
 - TVA : 5.5% (Énergie), 10% (Amélioration), 20% (Neuf/Surélévation). Remise Attestation Cerfa N° 1301-SD.
 - Mise en Sécurité Électrique (Alternative économique) : Si pas de norme totale, au moins Disjoncteur général, 30mA, Disjoncteurs divisionnaires, Terre (LES), suppression fils nus. Attestation Consuel obligatoire.
-
 FORMAT DE RÉPONSE OBLIGATOIRE (JSON EXACT).
 {
-  "domande_chiarimento": "Texte court si info critique manquante (ex: surface en m² non précisée) ou chaîne vide",
+  "message_conversationnel": "Ton message en tant que chef de chantier. Guide l'utilisateur, pose-lui une question sur la suite, sois naturel et expert.",
+  "consigli_tecnici_dtu": ["Conseil technique 1 basé sur le manuel", "Conseil 2"],
   "opere_richieste": [
     {
       "termini_ricerca": ["terme", "synonyme"],
       "suggested_qty": 20.0,
-      "fallback_creation": { "desc": "[IA] Description", "category": "Catégorie", "unit": "m²", "time": 1.5, "material_cost": 20.0, "gravats_unit": 15.0 }
+      "fallback_creation": { "desc": "[IA] Description", "category": "Catégorie Exacte de la liste", "unit": "m²", "time": 1.5, "material_cost": 20.0, "gravats_unit": 15.0 }
     }
   ],
   "opere_obbligatorie": [
     {
       "termini_ricerca": ["Prise courant 16A"],
       "suggested_qty": 5.0,
-      "fallback_creation": { "desc": "[Obligation Norme] Prise 16A", "category": "Électricité", "unit": "U", "time": 0.5, "material_cost": 8.0, "gravats_unit": 0.0 }
+      "fallback_creation": { "desc": "[Obligation Norme] Prise 16A", "category": "ÉLECTRICITÉ - COURANTS FAIBLES", "unit": "U", "time": 0.5, "material_cost": 8.0, "gravats_unit": 0.0 }
     }
   ],
   "opere_consigliate": [
     {
       "termini_ricerca": ["Prise RJ45"],
       "suggested_qty": 1.0,
-      "fallback_creation": { "desc": "[Recommandé] Prise communication RJ45", "category": "Électricité", "unit": "U", "time": 0.5, "material_cost": 15.0, "gravats_unit": 0.0 }
+      "fallback_creation": { "desc": "[Recommandé] Prise communication RJ45", "category": "ÉLECTRICITÉ - COURANTS FAIBLES", "unit": "U", "time": 0.5, "material_cost": 15.0, "gravats_unit": 0.0 }
     }
   ]
 }`;
@@ -3649,11 +3697,53 @@ FORMAT DE RÉPONSE OBLIGATOIRE (JSON EXACT).
 
     function renderResults(result) {
         const qContainer = document.getElementById('qotia-ai-questions');
-        if (result.domande_chiarimento && result.domande_chiarimento.length > 0) {
-            qContainer.innerHTML = '<strong>⚠️ Chiarimenti / Dati Mancanti:</strong> ' + result.domande_chiarimento;
+        
+        // 1. Render Messaggio Conversazionale (L'IA come Persona)
+        if (result.message_conversationnel) {
+            qContainer.innerHTML = `
+                <div style="display:flex; gap:12px; align-items:flex-start;">
+                    <div style="background:var(--primary); color:white; width:40px; height:40px; border-radius:50%; display:flex; align-items:center; justify-content:center; flex-shrink:0; box-shadow:0 2px 5px rgba(0,0,0,0.2);">
+                        <i class="fas fa-hard-hat"></i>
+                    </div>
+                    <div style="background: #ffffff; border: 1px solid var(--border); padding: 12px 15px; border-radius: 0 12px 12px 12px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); color: var(--text-main); line-height:1.4; font-size:0.95em;">
+                        ${result.message_conversationnel.replace(/\n/g, '<br>')}
+                    </div>
+                </div>
+            `;
             qContainer.style.display = 'block';
+            qContainer.style.background = 'transparent';
+            qContainer.style.border = 'none';
+            qContainer.style.padding = '0';
         } else {
             qContainer.style.display = 'none';
+        }
+
+        // 2. Render Consigli Tecnici (Chef de Chantier)
+        let adviceContainer = document.getElementById('qotia-ai-advice');
+        if (!adviceContainer) {
+            adviceContainer = document.createElement('div');
+            adviceContainer.id = 'qotia-ai-advice';
+            qContainer.parentNode.insertBefore(adviceContainer, qContainer.nextSibling);
+        }
+
+        if (result.consigli_tecnici_dtu && result.consigli_tecnici_dtu.length > 0) {
+            let adviceHtml = '<strong style="display:flex; align-items:center; gap:6px;"><i class="fas fa-lightbulb" style="color:#f59e0b;"></i> Conseils Techniques (DTU) :</strong><ul style="margin-top:8px; margin-bottom:0; padding-left:24px;">';
+            result.consigli_tecnici_dtu.forEach(cons => {
+                adviceHtml += `<li style="margin-bottom:4px;">${cons}</li>`;
+            });
+            adviceHtml += '</ul>';
+            adviceContainer.innerHTML = adviceHtml;
+            adviceContainer.style.display = 'block';
+            adviceContainer.style.background = '#fefce8';
+            adviceContainer.style.color = '#92400e';
+            adviceContainer.style.borderLeft = '4px solid #f59e0b';
+            adviceContainer.style.padding = '12px';
+            adviceContainer.style.marginTop = '15px';
+            adviceContainer.style.marginBottom = '15px';
+            adviceContainer.style.borderRadius = '0 6px 6px 0';
+            adviceContainer.style.fontSize = '0.9em';
+        } else {
+            adviceContainer.style.display = 'none';
         }
 
         const buildMatchCheckboxesOrdered = (itemsArray, containerId, checkedByDefault) => {
@@ -3704,18 +3794,21 @@ FORMAT DE RÉPONSE OBLIGATOIRE (JSON EXACT).
 
             let groupedByCategory = {};
             resolvedItems.forEach(res => {
-                let cat = res.data.category || "Général";
+                // Se c'è una categoria specifica, la usiamo, altrimenti 'Général'
+                let cat = res.data.category ? res.data.category.toUpperCase() : "GÉNÉRAL";
                 if (!groupedByCategory[cat]) groupedByCategory[cat] = [];
                 groupedByCategory[cat].push(res);
             });
 
-            const sortedDbCats = [...new Set(Config.allItems.map(i => i.category))];
-            
+            // 3. ORDINAMENTO SECONDO LA LISTA MAESTRA FORNITA
             let orderedCategories = Object.keys(groupedByCategory).sort((a, b) => {
-                let idxA = sortedDbCats.indexOf(a);
-                let idxB = sortedDbCats.indexOf(b);
+                let idxA = MASTER_FAMILIES_ORDER.indexOf(a);
+                let idxB = MASTER_FAMILIES_ORDER.indexOf(b);
+                
+                // Se la categoria non è nella nostra lista principale, la mettiamo alla fine
                 if(idxA === -1) idxA = 999; 
                 if(idxB === -1) idxB = 999;
+                
                 return idxA - idxB;
             });
 
@@ -3857,7 +3950,7 @@ FORMAT DE RÉPONSE OBLIGATOIRE (JSON EXACT).
         Store.save();
         
         App.openEditor(d.id);
-        App.showToast(`✅ Aggiunti ${addedCount} articoli a ${targetPiece}!`);
+        App.showToast(`✅ Aggiunti ${addedCount} articles à ${targetPiece}!`);
         
         modal.style.display = 'none';
         stepResults.style.display = 'none';
