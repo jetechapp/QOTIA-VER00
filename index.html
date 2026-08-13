@@ -3301,42 +3301,156 @@ Si l'utilisateur demande une rénovation totale d'une pièce (ex: "ristrutturare
 5. Sanitaires : Pose receveur de douche, Pose paroi de douche, Pose meuble vasque/WC.
 6. Finitions : Peinture, Joints silicone.
 
-=== MANUEL DE CHIFFRAGE ET LOGIQUE DE CHANTIER (BASE DE CONNAISSANCES) ===
-1. CUISINE
-- Démolition : Bouchonner réseaux, diagnostic amiante (DAAT) si < 1997.
-- Plomberie/VMC : Mini-vannes d'arrêt sous évier. Bouche VMC 125mm.
-- Élec (NF C 15-100) : 6 PC 16A min. Lignes 32A (Plaques), 16A (Four/LV).
-- Finitions : SPEC sur mur évier. Joint silicone fongicide.
+=== MANUEL DE CHIFFRAGE ET LOGIQUE DE CHANTIER (BASE DE CONNAISSANCES IA) ===
+PARTIE 1 : RÉGLEMENTATION ET CHIFFRAGE PIÈCE PAR PIÈCE
+1. LA CUISINE
+La cuisine est la pièce la plus complexe et normée au niveau des installations.
+1.1 Démolition et Préparation
+- Dépose de l'ancienne cuisine (meubles, électroménager, évier). Obligation d'isoler (bouchonner) les réseaux d'eau immédiatement après la dépose et de consigner les disjoncteurs correspondants. Penser à chiffrer l'évacuation en déchetterie (frais de traitement DIB).
+- Dépose des revêtements (faïence crédence, carrelage au sol). S'il s'agit d'un bâtiment antérieur à 1997, l'IA doit exiger le diagnostic amiante (DAAT) car les colles de faïence sont fréquemment amiantées.
+1.2 Réseaux Plomberie et VMC
+- Plomberie : Alimentation EF/EC et évacuation (PVC 40mm) pour évier et lave-vaisselle. Respect des DTU 60.1 et 60.11. L'IA doit systématiquement ajouter la fourniture et pose de mini-vannes d'arrêt sous l'évier. Pente minimale d'évacuation de 1% (idéal 2%).
+- VMC : Pose d'une bouche d'extraction VMC spécifique (diamètre 125 mm). Le débit doit respecter l'arrêté de 1982 (ex: de 45 m³/h à 135 m³/h en grande vitesse, selon la taille du logement).
+1.3 Électricité (Norme NF C 15-100)
+- Éclairage : Minimum 1 point d'éclairage au plafond avec socle DCL.
+- Prises de courant (PC 16A) : Minimum 6 prises dans la cuisine, dont 4 réparties au-dessus du plan de travail (hors zone évier et plaques de cuisson). Les prises sur plan de travail doivent être à une hauteur minimale de 8 cm au-dessus du plan.
+- Circuits spécialisés obligatoires : 1 circuit 32A (câble 6mm²) pour plaques de cuisson / cuisinière. 1 circuit 16A (câble 2.5mm²) pour le four indépendant. 1 circuit 16A pour le lave-vaisselle.
+- (Optionnel mais recommandé : circuits dédiés pour frigo et micro-ondes). L'IA doit proposer un circuit dédié pour le congélateur, protégé par un interrupteur différentiel à immunité renforcée (Type HPi ou F) pour éviter la perte de denrées en cas de coupure intempestive.
+1.4 Murs, Sols et Finitions
+- Ragréage et pose de carrelage (mortier-colle C2). Utiliser un mortier de jointoiement hydrofuge et antitache pour le sol.
+- Ratissage et peinture (peinture lessivable type satin ou velours obligatoire). Le taux d'humidité du plâtre doit être testé (< 5%) avant mise en peinture.
+- Agencement : Pose des meubles de cuisine, découpe plan de travail, pose de la crédence et raccordement électroménager. Application recommandée d'un SPEC (Système de Protection à l'Eau sous Carrelage) sur le mur de l'évier avant la pose de la crédence. Joint silicone fongicide obligatoire en périphérie du plan de travail.
 
-2. SALLE DE BAIN / DOUCHE
-- Volumes : 0 (bac), 1 (jusqu'à 2m25), 2 (60cm autour). 
-- Étanchéité : SPEC (murs) ou SEL (sol). Test mise en eau 24h.
-- Élec : Liaison Équipotentielle (LES) obligatoire. Sèche-serviette Vol.2 = Classe II.
+2. SALLE DE BAIN & SALLE DE DOUCHE
+Ambiances soumises à de fortes contraintes d'humidité et de sécurité électrique. Correction réglementaire pour l'IA : L'amendement 5 de la norme NF C 15-100 a supprimé le Volume 3. Seuls les Volumes 0 (dans la baignoire/receveur), 1 (au-dessus jusqu'à 2m25) et 2 (à 60 cm autour) existent désormais. Le volume caché (sous la baignoire) a ses propres règles.
+2.1 Démolition et Préparation
+- Dépose sanitaires (baignoire, bac à douche, vasque, bidet).
+- Piquage des faïences et démolition de la chape pour passage réseau. Vérification de l'intégrité de la dalle ou du plancher bois (solives) avant toute reconstruction, surtout en cas d'anciennes infiltrations.
+2.2 Plomberie et Étanchéité
+- Encastrement des réseaux multicouche/PER et évacuations (PVC 40mm pour vasque/douche, 50mm pour baignoire).
+- Pose du receveur extra-plat ou création d'une douche à l'italienne. Pour une douche à l'italienne, il faut chiffrer un décaissement de la dalle (si structurellement possible) ou la création d'une estrade. La pente d'évacuation doit être au minimum de 2% vers la bonde/caniveau.
+- Étape Technique : Pose du S.P.E.C. (Système de Protection à l'Eau sous Carrelage) ou natte d'étanchéité (type Schlüter) sur toute la zone douche/bain. L'IA doit différencier le S.P.E.C. (murs de la douche) du S.E.L. (Système d'Étanchéité Liquide), obligatoire pour le sol d'une douche maçonnée. Des bandes d'étanchéité armées doivent être chiffrées pour tous les angles rentrants.
+2.3 Électricité (Norme NF C 15-100)
+- Liaison Équipotentielle Supplémentaire (LES) : Obligatoire. Raccordement à la terre de toutes les masses métalliques. L'IA doit chiffrer la pose d'une boîte de dérivation spécifique LES, généralement placée sous la baignoire ou derrière la vasque. Câble vert/jaune 2.5mm² minimum.
+- Éclairage : Minimum 1 point d'éclairage (étanche IPx4 minimum si en volume 2).
+- Prises de courant : Minimum 1 prise de courant 16A, obligatoirement placée hors des volumes 0, 1 et 2 (à plus de 60 cm de la douche/baignoire) et à une hauteur min de 0,90m.
+- Chauffage : Ligne dédiée pour sèche-serviettes électrique (boîte de sortie de câble). L'appareil installé en Volume 2 doit obligatoirement être de Classe II (double isolation, sans prise de terre).
+2.4 Murs, Sols et Finitions
+- Pose carrelage au sol et faïence murale (colle C2S1). Jointoiement époxy recommandé dans la douche. Respect du DTU 52.2. L'IA doit imposer la vérification de la "Glissance" du carrelage sol (Norme PN12 à PN24, ou groupe R9 à R11) pour éviter les chutes.
+- Pose des sanitaires, robinetterie, paroi de douche et joints silicone périphériques. L'IA doit chiffrer un test de mise en eau de l'étanchéité pendant 24h avant la pose de la faïence ou du carrelage.
 
 3. SÉJOUR / SALON
-- Gros Œuvre : Sondage BE Structure si démolition mur.
-- Élec : 1 DCL. 1 PC 16A pour 4m². RJ45 Grade 2TV/3TV.
+Focus sur la connectivité, distribution spatiale et finitions de pregio (haut de gamme).
+3.1 Démolition et Gros Œuvre
+- Suppression d'anciennes cloisons pour ouvrir l'espace (si applicable). Avant toute démolition, l'IA doit intégrer un sondage de repérage structurel. Si le mur sonne "plein", intégrer la ligne "Intervention Bureau d'Études Structure et pose d'IPN/HEA".
+- Dépose des anciens parquets/moquettes.
+3.2 Électricité et Domotique (Norme NF C 15-100)
+- Éclairage : Minimum 1 point d'éclairage central avec DCL (ou 2 si très grande pièce). En cas d'impossibilité technique (dalle béton pleine), la norme permet de remplacer le plafonnier par 2 points d'éclairage en applique ou 2 socles de prises de courant commandées.
+- Prises de courant (PC 16A) : 1 prise pour 4 m² de surface (avec un minimum absolu de 5 prises).
+- Réseaux de communication : Minimum 1 prise RJ45 (réseau/téléphone) placée à côté d'une prise de courant. 1 prise TV (coaxiale) si la surface est > 100m² ou selon demande client (souvent remplacée par RJ45 aujourd'hui). L'IA doit chiffrer du câblage RJ45 de catégorie Grade 2TV ou Grade 3TV pour garantir le passage des signaux très haut débit et remplacer totalement le câble coaxial.
+3.3 Murs, Sols et Finitions
+- Préparation des fonds (enduit de lissage soigné).
+- Pose de parquet (massif ou contrecollé) avec sous-couche acoustique. Respect du DTU 51.2 pour la pose flottante, et DTU 51.11 pour la pose clouée. La norme NRA (Nouvelle Réglementation Acoustique) exige souvent un affaiblissement de -19 dB pour les sous-couches en copropriété. Jeu de dilatation périphérique de 8 mm minimum.
+- Peinture murs et plafonds (mat au plafond, mat profond ou velours aux murs).
 
-4. CHAMBRE / COULOIR / CELLIER / WC
-- Isolation phonique si besoin. DAAF obligatoire (couloir).
-- Cellier : Lave-linge sous Différentiel TYPE A obligatoire.
-- WC : Chute acoustique. Double peau BA13 sur bâti-support. VMC avec Timer.
+4. CHAMBRE
+4.1 Préparation et Isolation
+- Doublage acoustique des cloisons séparatives (Placo Phonique + laine de roche) si nécessaire. Si le bruit d'impact provient du plafond, l'IA doit proposer un faux-plafond acoustique monté sur suspentes anti-vibratiles.
+4.2 Électricité (Norme NF C 15-100)
+- Éclairage : Minimum 1 point d'éclairage avec DCL. (Souvent complété par des appliques en tête de lit en supplément). Ajouter le chiffrage de commutateurs en va-et-vient (ou télérupteur) pour piloter la lumière principale depuis le lit.
+- Prises de courant : Minimum 3 prises de courant 16A réparties en périphérie.
+- Communication : Minimum 1 prise RJ45 (obligatoire pour avoir un accès filaire internet/téléphone). L'IA peut proposer un up-selling : remplacement des prises classiques près de la tête de lit par des socles mixtes 16A + module de charge USB/USB-C.
+4.3 Murs, Sols et Agencement
+- Ragréage et pose de revêtement (parquet, sol PVC, moquette).
+- Création de dressing sur mesure (ossature, aménagement intérieur, portes coulissantes).
+- Peinture de finition. L'IA doit orienter le chiffrage vers des peintures classées A+ (faible émission de COV) ou biosourcées pour garantir la Qualité de l'Air Intérieur (QAI), particulièrement dans les chambres d'enfants.
 
---- MACRO-OUVRAGES ---
-A. CLIMATISATION (PAC AIR/AIR)
-- Déclaration Préalable Mairie. Pompe de relevage condensats si pas gravitaire.
-- Test étanchéité azote 40 bars, Tirage au vide. Cerfa N°15497.
+5. ENTRÉE & COULOIR
+C'est le nœud vital de la maison, souvent où se trouve le tableau électrique général.
+5.1 Réseaux et Cœur Électrique (Norme NF C 15-100)
+- GTL (Gaine Technique Logement) : C'est souvent ici qu'est installé le Tableau Électrique (TGBT) et le Coffret de Communication (box internet, brassage RJ45). Règle PMR & Accessibilité : Les manettes des disjoncteurs sur le tableau doivent être situées entre 0,90 m et 1,80 m du sol fini (ou 1,30 m max en logement accessible PMR).
+- Éclairage : Minimum 1 point d'éclairage au plafond par pièce/dégagement. (Des spots encastrés ou des commandes en va-et-vient / télérupteur sont standard). L'IA doit inclure obligatoirement la fourniture et pose d'un DAAF (Détecteur Avertisseur Autonome de Fumée) certifié NF EN 14604, fixé au plafond de l'axe de circulation menant aux chambres.
+- Prises de courant : Minimum 1 prise 16A si la surface du couloir/entrée est supérieure à 4 m².
+5.2 Menuiseries et Finitions
+- Pose de la porte d'entrée (porte blindée, contrôle d'accès/visiophone). Largeur de passage utile : si remplacement du bloc-porte, s'assurer de respecter la norme d'accessibilité PMR (largeur de porte de 90 cm pour un passage utile de 83 cm minimum).
+- Faux-plafond (très fréquent dans les couloirs pour passer les gaines de toute la maison ou la climatisation gainable).
+- Pose carrelage ou parquet (zone à fort passage, nécessitant des matériaux classe AC4 ou supérieur).
 
-B. CHAUFFE-EAU ÉLECTRIQUE
-- Sécurité hydraulique OBLIGATOIRE : Groupe de sécurité neuf, Vase d'expansion (8-18L), Siphon, Raccords diélectriques.
-- Circuit dédié 20A + Diff 30mA + Contacteur Jour/Nuit.
+6. BUANDERIE / CELLIER
+La pièce technique par excellence.
+6.1 Plomberie et VMC
+- Alimentation EF et évacuation spécifique (PVC 40mm) avec siphon type "machine à laver". L'IA doit chiffrer une vanne d'arrêt facilement manœuvrable. Si possible (maison individuelle ou RdC), proposer la création d'un siphon de cour (évacuation de sol) en prévention des fuites.
+- Bouche d'extraction VMC (pièce humide).
+6.2 Électricité (Norme NF C 15-100)
+- Éclairage : Minimum 1 point d'éclairage.
+- Prises classiques : Minimum 1 prise de courant 16A pour les usages courants.
+- Circuits spécialisés : 1 circuit 16A dédié pour le Lave-linge. 1 circuit 16A dédié pour le Sèche-linge. (Si congélateur présent : 1 circuit dédié recommandé, idéalement immunisé contre les coupures). Le disjoncteur protégeant le circuit du lave-linge doit impérativement être placé sous un interrupteur différentiel de Type A (sensible aux courants continus générés par les moteurs de lavage).
+6.3 Finitions
+- Sols techniques (carrelage grès cérame). Prévoir des plinthes à gorge (remontantes) pour faciliter l'entretien et l'hygiène.
+- Peinture hydrofuge ou lessivable.
 
-C. PEINTURE (DTU 59.1)
-- Lessivage alcalin si gras. Impression sur plâtre neuf. Traitement amiante/plomb si <1997/1949.
+7. TOILETTE / WC
+7.1 Plomberie et Sanitaire
+- Alimentation EF avec robinet d'arrêt. Évacuation gros diamètre (PVC 100mm). Afin de respecter la réglementation acoustique (NRA), l'IA doit imposer l'utilisation d'un tube PVC type "Chute Acoustique" ou l'isolement de la canalisation par un manchon de laine minérale.
+- Étape Technique : Fixation du Bâti-support (WC suspendu) et raccordement de la pipe d'évacuation. Pose d'un lave-mains si l'espace le permet (EF/EC + évacuation 32mm).
+7.2 Électricité (Norme NF C 15-100) et VMC
+- Éclairage : Minimum 1 point d'éclairage.
+- Prises de courant : Depuis l'amendement 5, 1 prise 16A est obligatoire dans le WC (à placer à proximité de l'interrupteur, utile pour les WC lavants ou le ménage).
+- VMC : Bouche d'extraction avec détection de présence ou couplée à l'éclairage (diamètre 80 mm). Le module d'extraction doit être équipé d'une temporisation (Timer) pour continuer à ventiler les odeurs 10 à 15 minutes après l'extinction de la lumière.
+7.3 Habillage et Finitions
+- Habillage du bâti-support en plaques de plâtre (BA13 hydrofuge). L'IA doit chiffrer une double peau de BA13 hydrofuge (ou plaque renforcée type Habito) sur la face avant du bâti pour garantir la rigidité lors de l'appui sur la cuvette. Prévoir une petite trappe de visite si la mécanique du bâti n'est pas 100% accessible via la plaque.
+- Pose de carrelage au sol et faïence murale ou peinture lessivable. Pose de la cuvette suspendue, de la plaque de déclenchement et joint silicone.
 
-D. LOGISTIQUE & RÉNOVATION TOTALE
-- Si rénovation totale : Prévoir toujours Démolition, Évacuation gravats, et Nettoyage fin de chantier.
-=== FIN DU MANUEL ===
+PARTIE 2 : LOGIQUE PAR TYPOLOGIE D'APPARTEMENT (T1 AU T4)
+1. LE STUDIO (T1 - Monolocale) - Superficie typique : 15-30 m²
+- Démolition : Dépose complète de l'existant.
+- Électricité : TGBT Min 2 rangées. 2 Diff 30mA (1 Type A, 1 Type AC). VDI : Min 2 prises RJ45. Prises : Min 3. Coin Cuisine : Min 3 prises plan de travail. 1 circuit 32A + 2x 16A.
+- Plomberie : Réseaux courts (Nourrice).
+- VMC : Groupe extra-plat. 2 bouches.
+
+2. LE DEUX PIÈCES (T2 - Bilocale) - Superficie typique : 35-50 m²
+- Électricité : TGBT Min 3 rangées. VDI : Min 2 RJ45. Séjour : Min 5 prises. Chambre : Min 3 prises. Cuisine : Min 6 prises + 4 circuits spécialisés.
+- Chauffage/Clim : Multi-split (1 salon, 1 chambre).
+
+3. LE TROIS PIÈCES (T3 - Trilocale) - Superficie typique : 55-75 m²
+- Démolition : Attention aux saignées longues dans murs porteurs -> proposer doublages.
+- Électricité : TGBT Min 3 rangées. GTL. VDI : Min 3 RJ45.
+- Plomberie : Séparatif Eaux Usées / Eaux Vannes impératif.
+
+4. LE QUATRE PIÈCES (T4 - Quadrilocale) - Superficie typique : 80-100+ m²
+- Logistique : Bennes régulières, redevance ODP.
+- Électricité : TGBT 4 rangées si > 100m². VDI : Min 4 RJ45. Domotique fréquente.
+- Plomberie : Suite parentale. Sanibroyeur à éviter (rehaussement plancher privilégié).
+- Clim : Gainable avec plénums et Airzone.
+
+PARTIE 3 : LOTS TECHNIQUES SPÉCIFIQUES ET LOGIQUES (MACRO-OUVRAGES)
+A. LA CLIMATISATION (HVAC - Pompe À Chaleur Air/Air)
+- Percements et Carottages. Ligne "Déclaration Préalable de Travaux en Mairie".
+- Évacuation des condensats : Gravitaire ou Pompe de relevage + tube cristallin.
+- Électricité : Ligne dédiée TGBT + disjoncteur + diff. Câblage bus.
+- Installation : Unité extérieure sur plots ou équerres.
+- Mise en Service : Test d'étanchéité azote 40 bars. Tirage au vide. Cerfa N°15497.
+
+B. LE CHAUFFE-EAU ÉLECTRIQUE ET THERMODYNAMIQUE
+- Dépose : Vidange, dépose, déchetterie (frais D3E).
+- Plomberie : Groupe de sécurité neuf, Vase d'expansion sanitaire (8 à 18L), Siphon, Raccords diélectriques. Réducteur de pression si > 3 bars.
+- Électricité : Ligne dédiée 20A + Diff 30mA. Contacteur Jour/Nuit (Heures Creuses) 2A.
+- Fixation : Trépied si mur BA13. Thermodynamique : 20m³ hors encombrants min, sinon gaines façade.
+
+C. LA PEINTURE (DTU 59.1)
+- Installation : Bâchage, masquage.
+- Préparation : Lessivage alcalin, Impression (Primaire) obligatoire sur plâtre neuf. Traitement amiante/plomb si <1997/1949 (pas de ponçage mécanique à sec).
+- Traitement : Enduisage, calicot, ratissage (girafe).
+- Finitions : État C, B, ou A (Soignée, ratissage complet). Pièces humides: acrylique hydrofuge Satin/Velours. Pièces sèches: Mat/Velours.
+
+PARTIE 4 : LOGISTIQUE, RÉGLEMENTATIONS ET MODÉLISATION FINANCIÈRE
+- Contraintes : Étage > 2 sans ascenseur -> Coef Manutention (+15-25%) ou Monte-meubles. Centre-ville -> Forfait stationnement urbain.
+- Diagnostics : <1997 Amiante (DAAT). <1949 Plomb (CREP).
+- Copropriété : Nettoyage quotidien parties communes. Horaires restreints -> Majoration temps démolition (+15%).
+- Majoration Chutes : Pose droite +10%. Diagonale/Format >80x80 +15-20%. Placo +5-7%.
+- Délais/Séchage : Chape tradi = 1 semaine/cm. Chape rapide = +40% coût. Test bombe à carbure pour chape fluide.
+- TVA : 5.5% (Énergie), 10% (Amélioration), 20% (Neuf/Surélévation). Remise Attestation Cerfa N° 1301-SD.
+- Mise en Sécurité Électrique (Alternative économique) : Si pas de norme totale, au moins Disjoncteur général, 30mA, Disjoncteurs divisionnaires, Terre (LES), suppression fils nus. Attestation Consuel obligatoire.
 
 FORMAT DE RÉPONSE OBLIGATOIRE (JSON EXACT).
 {
@@ -3485,6 +3599,9 @@ FORMAT DE RÉPONSE OBLIGATOIRE (JSON EXACT).
                 if (Config.searchIndex) {
                     for (let term of terms) {
                         let res = Config.searchIndex.search(term);
+                        
+                        // CODICE MIGLIORATO: Filtra solo i risultati con un punteggio basso (match reale)
+                        // Fuse.js assegna punteggi da 0.0 (perfetto) a 1.0 (pessimo). Se > 0.35, è spazzatura.
                         let validMatches = res.filter(m => m.score !== undefined && m.score < 0.35);
 
                         if (validMatches.length > 0) {
@@ -3498,6 +3615,7 @@ FORMAT DE RÉPONSE OBLIGATOIRE (JSON EXACT).
                 container.innerHTML += `<div style="font-weight:bold; margin-top:10px; font-size:0.85em; color:var(--primary);">» Ricerca: "${displayTerms}"</div>`;
                 
                 if(searchResults.length > 0) {
+                    // Match accurato trovato nel Database
                     searchResults.forEach(match => {
                         const item = match.item;
                         const id = 'chk_' + Math.random().toString(36).substr(2, 9);
@@ -3514,6 +3632,7 @@ FORMAT DE RÉPONSE OBLIGATOIRE (JSON EXACT).
                         `;
                     });
                 } else if (fallback) {
+                    // Nessun Match accurato -> Usa il Fallback generato dall'IA
                     const id = 'chk_new_' + Math.random().toString(36).substr(2, 9);
                     const valObj = encodeURIComponent(JSON.stringify(fallback));
                     
