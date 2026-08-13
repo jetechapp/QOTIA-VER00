@@ -22,7 +22,9 @@
     <script>
         if (!sessionStorage.getItem('qotia_cache_busted')) {
             sessionStorage.setItem('qotia_cache_busted', 'true');
-            window.location.replace(window.location.pathname + '?t=' + new Date().getTime());
+            const url = new URL(window.location.href);
+            url.searchParams.set('t', Date.now().toString());
+            window.location.replace(url.toString());
         }
     </script>
 
@@ -856,11 +858,23 @@
             },
 
             async save() {
-                await sbClient.from('app_state').upsert({ 
-                    user_id: Auth.user.id, 
+                if (!Auth.user?.id) {
+                    console.error('Store.save: utilisateur non authentifié');
+                    return { error: new Error('Utilisateur non authentifié') };
+                }
+
+                const { error } = await sbClient.from('app_state').upsert({
+                    user_id: Auth.user.id,
                     data_json: this.data,
                     last_update: new Date()
                 });
+
+                if (error) {
+                    console.error('Store.save:', error);
+                    App.showToast('Erreur de sauvegarde Cloud');
+                }
+
+                return { error };
             }
         };
 
@@ -882,8 +896,14 @@
                 globalChart: null 
             },
             
-            init() { 
-                Auth.init(); 
+            async init() { 
+                try {
+                    await Auth.init();
+                } catch (error) {
+                    console.error('QOTIA init:', error);
+                    const msg = document.getElementById('login-msg');
+                    if (msg) msg.innerText = 'Erreur de démarrage : ' + error.message;
+                } 
                 
                 window.history.pushState({page: 'app'}, "");
                 window.addEventListener('popstate', (e) => {
@@ -1032,7 +1052,37 @@
             },
 
             formatMoney(amount) {
-                return (amount || 0).toLocaleString('fr-FR', {minimumFractionDigits: 2, maximumFractionDigits: 2}) + ' €';
+                const numeric = Number(amount);
+                return (Number.isFinite(numeric) ? numeric : 0).toLocaleString('fr-FR', {minimumFractionDigits: 2, maximumFractionDigits: 2}) + ' €';
+            },
+
+            escapeHtml(value) {
+                return String(value ?? '')
+                    .replace(/&/g, '&amp;')
+                    .replace(/</g, '&lt;')
+                    .replace(/>/g, '&gt;')
+                    .replace(/"/g, '&quot;')
+                    .replace(/'/g, '&#039;');
+            },
+
+            toggleExcludeMat() {
+                const cb = document.getElementById('edit-item-exclude-mat');
+                const matInput = document.getElementById('edit-item-mat');
+                if (!cb || !matInput) return;
+
+                if (cb.checked) {
+                    this.state.tempMatCost = Number.parseFloat(matInput.value) || 0;
+                    matInput.value = '0';
+                    matInput.disabled = true;
+                    matInput.style.opacity = '0.55';
+                } else {
+                    matInput.disabled = false;
+                    matInput.style.opacity = '1';
+                    if (Number.isFinite(this.state.tempMatCost)) {
+                        matInput.value = this.state.tempMatCost;
+                    }
+                }
+                this.calcEditPrice();
             },
 
             async sendAIMessage() {
@@ -1119,7 +1169,7 @@
                     chatContainer.innerHTML += `
                         <div style="background: white; padding: 15px; border-radius: 12px; border: 1px solid var(--border); box-shadow: var(--shadow-card); max-width: 90%; align-self: flex-start; line-height: 1.4;">
                             <div style="font-weight: 800; color: var(--primary); margin-bottom: 5px; font-size: 0.8rem;"><i class="fas fa-robot"></i> Assistant Qotia</div>
-                            <div>${aiResult.message || 'Voici mes suggestions :'}</div>
+                            <div>${App.escapeHtml(aiResult.message || 'Voici mes suggestions :')}</div>
                             ${proposalsHtml}
                         </div>
                     `;
@@ -1128,7 +1178,7 @@
                     if (document.getElementById(loadingId)) document.getElementById(loadingId).remove();
                     chatContainer.innerHTML += `
                         <div style="background: #FEF2F2; color: #DC2626; padding: 15px; border-radius: 12px; border: 1px solid #FCA5A5; max-width: 85%; align-self: flex-start;">
-                            <strong>Erreur:</strong> ${err.message}
+                            <strong>Erreur:</strong> ${App.escapeHtml(err.message)}
                         </div>
                     `;
                 }
@@ -2202,7 +2252,10 @@
                 
                 if (searchTerm.length > 1) {
                     breadcrumb.style.display = 'none';
-                    if (typeof Fuse === 'undefined') return; 
+                    if (typeof Fuse === 'undefined' || !Config.searchIndex) {
+                        cont.innerHTML = '<div style="text-align:center; padding:30px; color:var(--text-sub);">Index de recherche non disponible. Rechargez la bibliothèque.</div>';
+                        return;
+                    }
                     const results = Config.searchIndex.search(searchTerm);
                     if(results.length === 0) {
                         cont.innerHTML = `<div style="text-align:center; padding:30px; color:var(--text-sub);">Nessun risultato per "${searchTerm}"</div>`;
@@ -2323,7 +2376,8 @@
                 document.getElementById('edit-item-time').value = item.labor_time || 0;
                 
                 const matInput = document.getElementById('edit-item-mat');
-                matInput.value = item.material_cost || 0;
+                this.state.tempMatCost = Number.parseFloat(item.material_cost) || 0;
+                matInput.value = this.state.tempMatCost;
                 matInput.disabled = false;
                 matInput.style.opacity = '1';
                 
@@ -2367,7 +2421,8 @@
                 document.getElementById('edit-item-time').value = item.time || 0;
                 
                 const matInput = document.getElementById('edit-item-mat');
-                matInput.value = item.material_cost || 0; 
+                this.state.tempMatCost = Number.parseFloat(item.material_cost) || 0;
+                matInput.value = this.state.tempMatCost;
                 matInput.disabled = false;
                 matInput.style.opacity = '1';
                 
@@ -2415,7 +2470,7 @@
 
             saveItemChanges() { 
                 const desc = document.getElementById('edit-item-desc').value;
-                const qty = parseFloat(document.getElementById('edit-item-qty').value)||0;
+                const qty = Math.max(0, Number.parseFloat(document.getElementById('edit-item-qty').value) || 0);
                 const price = parseFloat(document.getElementById('edit-item-price').value)||0;
                 
                 const time = parseFloat(document.getElementById('edit-item-time').value)||0;
@@ -2754,8 +2809,12 @@
                 }
                 if(!c) return alert("Erreur: Document introuvable.");
 
-                const cli = Store.data.clients.find(x=>x.id==c.clientId); 
-                const rateSell = Store.data.settings.hourlyRate || 45;
+                const cli = Store.data.clients.find(x=>x.id==c.clientId) || {
+                    nom: 'Client supprimé',
+                    addr: '',
+                    tel: ''
+                };
+                const rateSell = Number(Store.data.settings.hourlyRate) || 45;
                 let items, title, ref, extraInfo = ""; 
                 let signatureBlock = ""; 
                 let totalLaborPDF = 0; 
@@ -2922,9 +2981,10 @@
                         <div style="height:30px;"></div>
                     </div>`;
                     
+                const safeFilename = `${title}_${ref}`.replace(/[\\/:*?"<>|]+/g, '_').replace(/\s+/g, '_');
                 const opt = { 
                     margin: 10, 
-                    filename: `${title}_${ref}.pdf`, 
+                    filename: `${safeFilename}.pdf`, 
                     image: { type: 'jpeg', quality: 0.98 }, 
                     html2canvas: { scale: 2, useCORS: true }, 
                     jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' } 
@@ -3221,6 +3281,9 @@
                 
                 <label style="font-weight: bold; display: block; margin-bottom: 10px;">Descrivi vocalmente o per iscritto i lavori (es. Rifacimento bagno):</label>
                 <textarea id="qotia-ai-input" rows="4" style="width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 6px; box-sizing: border-box;"></textarea>
+                <div style="font-size:0.75rem; color:#92400e; background:#fffbeb; border:1px solid #fde68a; padding:8px; border-radius:6px; margin-top:10px;">
+                    Attention : une clé OpenAI saisie ici est utilisée côté navigateur. En production, déplacez l'appel OpenAI dans une Edge Function Supabase.
+                </div>
                 <input type="password" id="qotia-api-key" placeholder="Inserisci API Key OpenAI (sk-...)" style="width: 100%; padding: 10px; margin-top: 10px; border: 1px solid #ccc; border-radius: 6px; box-sizing: border-box;">
                 <button id="qotia-ai-submit" style="width: 100%; background: #4f46e5; color: white; border: none; padding: 12px; border-radius: 6px; margin-top: 15px; font-weight: bold; cursor: pointer;">Analizza e Cerca nel Database</button>
             </div>
@@ -3386,7 +3449,7 @@ Pour CHAQUE intervention, tu dois fournir :
 2. "suggested_qty" : La quantité numérique exacte (ex: 20.0).
 3. "fallback_creation" : Un objet pour créer l'article si la recherche échoue, avec la catégorie tirée de la liste OBLIGATOIRE ci-dessus.
 
-    const SYSTEM_PROMPT = `Tu es un Expert Économiste de la Construction et spécialiste BTP en France.
+Tu es un Expert Économiste de la Construction et spécialiste BTP en France.
 Ton rôle est d'analyser la demande du client, de déduire les obligations légales (DTU, NF C 15-100) et de générer une liste d'interventions chiffrées.
 
 IMPORTANT : Ton système a une mémoire de la conversation. Si l'utilisateur te demande une précision, de modifier ou d'ajouter quelque chose, tu dois METTRE À JOUR ta liste précédente en y intégrant ses corrections.
