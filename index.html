@@ -721,7 +721,7 @@
                         .from('profiles')
                         .select('role')
                         .eq('id', this.user.id)
-                        .single();
+                        .maybeSingle();
                     
                     if (profile && profile.role) {
                         this.role = profile.role.toLowerCase();
@@ -756,7 +756,7 @@
                         .from('profiles')
                         .select('role')
                         .eq('id', this.user.id)
-                        .single();
+                        .maybeSingle();
                     
                     if (profile && profile.role) {
                         this.role = profile.role.toLowerCase();
@@ -831,11 +831,15 @@
                     Config.searchIndex = new Fuse(Config.allItems, options);
                 }
 
-                const { data: userData } = await sbClient
+                const { data: userData, error: stateError } = await sbClient
                     .from('app_state')
                     .select('data_json')
                     .eq('user_id', Auth.user.id)
-                    .single();
+                    .maybeSingle();
+
+                if (stateError) {
+                    console.warn('app_state Supabase:', stateError);
+                }
 
                 if (userData && userData.data_json) {
                     this.data = userData.data_json;
